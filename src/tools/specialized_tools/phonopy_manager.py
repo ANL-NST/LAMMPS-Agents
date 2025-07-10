@@ -41,7 +41,7 @@ class PhonopyManager:
             )
             if result.returncode != 0:
                 return f"Phonopy error:\n{result.stderr}"
-            return f"Displacement structures generated in {self.workdir}"
+            return f"Displacement structures generated in {self.workdir} and saved as 'disp-*' directories"
         except Exception as e:
             return f"Exception during displacement generation: {str(e)}"
 
@@ -413,8 +413,8 @@ Potential file '{potential_filename}' copied to each displacement directory.
                         print(f.read())
                     return f"Phonopy band calculation failed:\nSTDOUT: {result.stdout}\nSTDERR: {result.stderr}"
                 
-                if result.returncode != 0:
-                    return f"Phonopy band calculation failed:\n{result.stderr}"
+                # if result.returncode != 0:
+                #     return f"Phonopy band calculation failed:\n{result.stderr}"
                 
                 # Run phonopy plotting
                 plot_result = subprocess.run(
@@ -500,7 +500,7 @@ Potential file '{potential_filename}' copied to each displacement directory.
             labels = ["G", "X", "M", "G", "Z", "R", "A", "Z"]
             
         elif crystal_system == "hexagonal":
-            # Hexagonal path: Γ-M-K-Γ-A-L-H-A
+            # Hexagonal path: Γ-M-K-Γ-A-L-H-A 
             kpath = "0.0 0.0 0.0  0.5 0.0 0.0  0.333 0.333 0.0  0.0 0.0 0.0  0.0 0.0 0.5  0.5 0.0 0.5  0.333 0.333 0.5  0.0 0.0 0.5"
             labels = ["G", "M", "K", "G", "A", "L", "H", "A"]
             
@@ -520,3 +520,9 @@ Potential file '{potential_filename}' copied to each displacement directory.
             labels = ["G", "X", "S", "Y", "G", "Z"]
         
         return kpath, labels
+
+
+# use seekpath for finding the k-path: https://seekpath.readthedocs.io/en/latest/maindoc.html
+
+#https://www.nature.com/articles/s41524-020-0271-3#Sec13
+#https://journals.aps.org/prb/pdf/10.1103/PhysRevB.90.205214

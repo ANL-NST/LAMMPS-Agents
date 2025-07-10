@@ -967,13 +967,17 @@ class FunctionRegistry:
         melting_point_manager = MeltingPointsManager(self.workdir)
 
         # Create wrapper functions that use the manager
-        def analyze_melting_image(image_path: str) -> str:
+        def analyze_melting_point_simulation(image_path: str) -> str:
             """Simple image analysis for simulation termination decision."""
             return vision_manager.analyze_melting_point_simulation(image_path)
 
-        def analyze_interface_image(image_path: str) -> str:
+        def analyze_solid_liquid_interface(image_path: str) -> str:
             """Simple image analysis for deciding if an interface is 50:50 solid liquid."""
             return vision_manager.analyze_solid_liquid_interface(image_path)
+        
+        def analyze_melting_point_plots(image_path: str) -> str:
+            """Plot analysis for deciding in the melting point simulation was successful."""
+            return vision_manager.analyze_melting_point_plots(image_path)
 
         def list_images(image_path: str) -> str:
             """List all images in working directory."""
@@ -983,8 +987,9 @@ class FunctionRegistry:
             return melting_point_manager.visualize_melting_point_results(system_info)        
     
         melting_analysis_functions = [
-            (analyze_interface_image, "analyze_solid_liquid_interface", "Analyzes the simulation image to understand if a 50:50 solid liquid interface exists. Parameters: image_path (str)"),
-            (analyze_melting_image, "analyze_image", "Analyzes the simulation image to understand if the structure is fully melted. Parameters: image_path (str)"),
+            (analyze_solid_liquid_interface, "analyze_solid_liquid_interface", "Analyzes the simulation image to understand if a 50:50 solid liquid interface exists. Parameters: image_path (str)"),
+            (analyze_melting_point_simulation, "analyze_melting_point_simulation", "Analyzes the simulation image to understand if the structure is fully melted. Parameters: image_path (str)"),
+            (analyze_melting_point_plots, "analyze_melting_point_plots", "Analyzes the plots of the melting point simulation resuls and decide whether the calculation is complete. Parameters: image_path (str)"),
             (list_images, "list_images_in_workdir", "List all image files in working directory. No parameters required."),
             (visualize_melting_point_results, "visualize_melting_point_results", "Creates the analysis plots for the melting point calculation. Parameters: output_file (str)"),
         ]

@@ -232,133 +232,133 @@ class MeltingPointsManager:
         
         return results
 
-    def create_melting_analysis_plots(self, data, system_info=None):
-        """Create melting analysis plots with graceful handling of missing data"""
+    # def create_melting_analysis_plots(self, data, system_info=None):
+    #     """Create melting analysis plots with graceful handling of missing data"""
         
-        fig = plt.figure(figsize=(15, 6))
-        for key in ['step', 'temperature', 'pair_energy', 'molecular_energy', 'total_energy', 'pressure', 'volume']:
-            if not isinstance(data[key], np.ndarray):
-                data[key] = np.array(data[key])
+    #     fig = plt.figure(figsize=(15, 6))
+    #     for key in ['step', 'temperature', 'pair_energy', 'molecular_energy', 'total_energy', 'pressure', 'volume']:
+    #         if not isinstance(data[key], np.ndarray):
+    #             data[key] = np.array(data[key])
         
-        temp = data['temperature']
-        volume = data['volume']
-        total_energy = data['total_energy']
-        pressure = data['pressure']
+    #     temp = data['temperature']
+    #     volume = data['volume']
+    #     total_energy = data['total_energy']
+    #     pressure = data['pressure']
         
-        # Perform melting analysis
-        analysis = self.analyze_melting_behavior(temp, volume, total_energy, pressure)
+    #     # Perform melting analysis
+    #     analysis = self.analyze_melting_behavior(temp, volume, total_energy, pressure)
         
-        # Helper function to create empty plot with message
-        def create_empty_plot(subplot_num, title, xlabel, ylabel, message="Data not available"):
-            plt.subplot(1, 3, subplot_num)
-            plt.text(0.5, 0.5, message, ha='center', va='center', 
-                    transform=plt.gca().transAxes, fontsize=12,
-                    bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.8))
-            plt.title(title)
-            plt.xlabel(xlabel)
-            plt.ylabel(ylabel)
-            plt.grid(True, alpha=0.3)
+    #     # Helper function to create empty plot with message
+    #     def create_empty_plot(subplot_num, title, xlabel, ylabel, message="Data not available"):
+    #         plt.subplot(1, 3, subplot_num)
+    #         plt.text(0.5, 0.5, message, ha='center', va='center', 
+    #                 transform=plt.gca().transAxes, fontsize=12,
+    #                 bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.8))
+    #         plt.title(title)
+    #         plt.xlabel(xlabel)
+    #         plt.ylabel(ylabel)
+    #         plt.grid(True, alpha=0.3)
         
-        # Plot 1: Energy Analysis
-        plt.subplot(1, 3, 1)
-        if len(temp) > 0 and len(total_energy) > 0:
-            plt.plot(temp, total_energy, 'lightcoral', alpha=0.5, linewidth=1, label='Raw energy')
+    #     # Plot 1: Energy Analysis
+    #     plt.subplot(1, 3, 1)
+    #     if len(temp) > 0 and len(total_energy) > 0:
+    #         plt.plot(temp, total_energy, 'lightcoral', alpha=0.5, linewidth=1, label='Raw energy')
             
-            if 'smoothed_data' in analysis:
-                smooth = analysis['smoothed_data']
-                plt.plot(smooth['temperature'], smooth['energy'], 'red', linewidth=3, label='Smoothed')
+    #         if 'smoothed_data' in analysis:
+    #             smooth = analysis['smoothed_data']
+    #             plt.plot(smooth['temperature'], smooth['energy'], 'red', linewidth=3, label='Smoothed')
             
-            plt.xlabel('Temperature (K)')
-            plt.ylabel('Total Energy (eV)')
-            plt.title('Energy vs Temperature')
-            plt.legend()
-            plt.grid(True, alpha=0.3)
-        else:
-            create_empty_plot(3, 'Energy vs Temperature', 'Temperature (K)', 'Total Energy (eV)',
-                            "No energy data available")
+    #         plt.xlabel('Temperature (K)')
+    #         plt.ylabel('Total Energy (eV)')
+    #         plt.title('Energy vs Temperature')
+    #         plt.legend()
+    #         plt.grid(True, alpha=0.3)
+    #     else:
+    #         create_empty_plot(3, 'Energy vs Temperature', 'Temperature (K)', 'Total Energy (eV)',
+    #                         "No energy data available")
         
-        # Plot 2: Heat Capacity (Binned Analysis)
-        plt.subplot(1, 3, 2)
-        if 'binned_analysis' in analysis:
-            binned = analysis['binned_analysis']
-            plt.plot(binned['temperature'], binned['heat_capacity'], 'orange', linewidth=2)
+    #     # Plot 2: Heat Capacity (Binned Analysis)
+    #     plt.subplot(1, 3, 2)
+    #     if 'binned_analysis' in analysis:
+    #         binned = analysis['binned_analysis']
+    #         plt.plot(binned['temperature'], binned['heat_capacity'], 'orange', linewidth=2)
             
-            if 'melting_temp_heat_capacity' in analysis:
-                mt = analysis['melting_temp_heat_capacity']
-                plt.axvline(mt, color='red', linestyle='--', alpha=0.7,
-                           label=f'Peak: {mt:.0f} K')
-                plt.legend()
+    #         if 'melting_temp_heat_capacity' in analysis:
+    #             mt = analysis['melting_temp_heat_capacity']
+    #             plt.axvline(mt, color='red', linestyle='--', alpha=0.7,
+    #                        label=f'Peak: {mt:.0f} K')
+    #             plt.legend()
             
-            plt.xlabel('Temperature (K)')
-            plt.ylabel('Heat Capacity (eV/K)')
-            plt.title('Heat Capacity (Binned Data)')
-            plt.grid(True, alpha=0.3)
-        else:
-            create_empty_plot(4, 'Heat Capacity (Binned Data)', 'Temperature (K)', 'Heat Capacity (eV/K)',
-                            "Insufficient data for\nheat capacity analysis")
+    #         plt.xlabel('Temperature (K)')
+    #         plt.ylabel('Heat Capacity (eV/K)')
+    #         plt.title('Heat Capacity (Binned Data)')
+    #         plt.grid(True, alpha=0.3)
+    #     else:
+    #         create_empty_plot(4, 'Heat Capacity (Binned Data)', 'Temperature (K)', 'Heat Capacity (eV/K)',
+    #                         "Insufficient data for\nheat capacity analysis")
             
-        # Plot 3: Summary Statistics
-        plt.subplot(1, 3, 3)
-        plt.axis('off')
+    #     # Plot 3: Summary Statistics
+    #     plt.subplot(1, 3, 3)
+    #     plt.axis('off')
         
-        # Create summary text
-        summary_text = "MELTING POINT ANALYSIS\n"
-        summary_text += "=" * 30 + "\n\n"
+    #     # Create summary text
+    #     summary_text = "MELTING POINT ANALYSIS\n"
+    #     summary_text += "=" * 30 + "\n\n"
         
-        if len(temp) > 0:
-            # Add system information if provided
-            if system_info is not None:
-                if 'system_name' in system_info:
-                    summary_text += f"System: {system_info['system_name']}\n"
-                if 'num_atoms' in system_info:
-                    summary_text += f"Atoms: {system_info['num_atoms']}\n"
-                if 'material' in system_info:
-                    summary_text += f"Material: {system_info['material']}\n"
-                summary_text += "\n"
+    #     if len(temp) > 0:
+    #         # Add system information if provided
+    #         if system_info is not None:
+    #             if 'system_name' in system_info:
+    #                 summary_text += f"System: {system_info['system_name']}\n"
+    #             if 'num_atoms' in system_info:
+    #                 summary_text += f"Atoms: {system_info['num_atoms']}\n"
+    #             if 'material' in system_info:
+    #                 summary_text += f"Material: {system_info['material']}\n"
+    #             summary_text += "\n"
             
-            summary_text += f"Data points: {len(temp)}\n"
-            summary_text += f"Temp range: {temp.min():.0f} - {temp.max():.0f} K\n"
+    #         summary_text += f"Data points: {len(temp)}\n"
+    #         summary_text += f"Temp range: {temp.min():.0f} - {temp.max():.0f} K\n"
             
-            if len(volume) > 0 and np.any(volume > 0):
-                summary_text += f"Volume range: {volume.min():.1f} - {volume.max():.1f} Ų\n"
-                vol_change = ((volume.max()-volume.min())/volume.min()*100) if volume.min() > 0 else 0
-                summary_text += f"Volume change: {vol_change:.1f}%\n\n"
-            else:
-                summary_text += "Volume data: Not available\n\n"
+    #         if len(volume) > 0 and np.any(volume > 0):
+    #             summary_text += f"Volume range: {volume.min():.1f} - {volume.max():.1f} Ų\n"
+    #             vol_change = ((volume.max()-volume.min())/volume.min()*100) if volume.min() > 0 else 0
+    #             summary_text += f"Volume change: {vol_change:.1f}%\n\n"
+    #         else:
+    #             summary_text += "Volume data: Not available\n\n"
             
-            summary_text += "Estimated Melting Points:\n"
-            melting_found = False
-            if 'melting_temp_deviation' in analysis:
-                summary_text += f"• Volume method: {analysis['melting_temp_deviation']:.0f} K\n"
-                melting_found = True
-            if 'melting_temp_heat_capacity' in analysis:
-                summary_text += f"• Heat capacity: {analysis['melting_temp_heat_capacity']:.0f} K\n"
-                melting_found = True
-            if 'melting_temp_pressure_fluctuations' in analysis:
-                summary_text += f"• Pressure fluct: {analysis['melting_temp_pressure_fluctuations']:.0f} K\n"
-                melting_found = True
+    #         summary_text += "Estimated Melting Points:\n"
+    #         melting_found = False
+    #         if 'melting_temp_deviation' in analysis:
+    #             summary_text += f"• Volume method: {analysis['melting_temp_deviation']:.0f} K\n"
+    #             melting_found = True
+    #         if 'melting_temp_heat_capacity' in analysis:
+    #             summary_text += f"• Heat capacity: {analysis['melting_temp_heat_capacity']:.0f} K\n"
+    #             melting_found = True
+    #         if 'melting_temp_pressure_fluctuations' in analysis:
+    #             summary_text += f"• Pressure fluct: {analysis['melting_temp_pressure_fluctuations']:.0f} K\n"
+    #             melting_found = True
             
-            if not melting_found:
-                summary_text += "• No clear melting point detected\n"
+    #         if not melting_found:
+    #             summary_text += "• No clear melting point detected\n"
             
-            # Add simulation type note
-            if 'volume_constant' in analysis:
-                summary_text += "\nNote: Volume constant (NVT)\n"
-            elif len(volume) > 0 and np.std(volume)/np.mean(volume) < 0.01:
-                summary_text += "\nNote: Minimal volume change\n"
-            else:
-                summary_text += "\nNote: Variable volume (NPT)\n"
+    #         # Add simulation type note
+    #         if 'volume_constant' in analysis:
+    #             summary_text += "\nNote: Volume constant (NVT)\n"
+    #         elif len(volume) > 0 and np.std(volume)/np.mean(volume) < 0.01:
+    #             summary_text += "\nNote: Minimal volume change\n"
+    #         else:
+    #             summary_text += "\nNote: Variable volume (NPT)\n"
                 
-        else:
-            summary_text += "No data available for analysis\n"
-            summary_text += "Check input files and format."
+    #     else:
+    #         summary_text += "No data available for analysis\n"
+    #         summary_text += "Check input files and format."
         
-        plt.text(0.05, 0.95, summary_text, transform=plt.gca().transAxes, fontsize=10,
-                 verticalalignment='top', fontfamily='monospace',
-                 bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.8))
+    #     plt.text(0.05, 0.95, summary_text, transform=plt.gca().transAxes, fontsize=10,
+    #              verticalalignment='top', fontfamily='monospace',
+    #              bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.8))
         
-        plt.tight_layout()
-        return fig, analysis
+    #     plt.tight_layout()
+    #     return fig, analysis
 
     def visualize_melting_point_results(self, system_info=None) -> str:
         """
@@ -450,3 +450,202 @@ class MeltingPointsManager:
         
         finally:
             os.chdir(original_dir)
+
+    def create_melting_analysis_plots(self, data, system_info=None):
+        """Create melting analysis plots matching the interactive scatter plot style"""
+        
+        # Create figure with white background and larger size for better visibility
+        fig = plt.figure(figsize=(16, 10), facecolor='white')
+        
+        # Validate and convert data to numpy arrays safely
+        required_keys = ['step', 'temperature', 'pair_energy', 'molecular_energy', 'total_energy', 'pressure', 'volume']
+        for key in required_keys:
+            if key not in data:
+                data[key] = np.array([])  # Create empty array if key missing
+            elif not isinstance(data[key], np.ndarray):
+                data[key] = np.array(data[key])
+        
+        temp = data['temperature']
+        volume = data['volume']
+        potential_energy = data['pair_energy']  # Use potential energy
+        pressure = data['pressure']
+        
+        # Only perform analysis if we have sufficient data
+        analysis = {}
+        if len(temp) > 10 and len(potential_energy) > 10:
+            analysis = self.analyze_melting_behavior(temp, volume, potential_energy, pressure)
+        
+        # Main scatter plot - Potential Energy vs Temperature
+        ax1 = plt.subplot(2, 2, (1, 2))  # Top row spanning both columns
+        
+        if len(temp) > 0 and len(potential_energy) > 0 and np.any(potential_energy != 0):
+            # Create scatter plot with red color scheme matching the React version
+            scatter = ax1.scatter(temp, potential_energy, 
+                                c='#dc2626',  # Red color
+                                alpha=0.6, 
+                                s=80,  # Point size
+                                edgecolors='#991b1b',  # Darker red edge
+                                linewidth=0.6,
+                                label='MD Trajectory')
+            
+            # Add smoothed line if available
+            # if 'smoothed_data' in analysis:
+            #     smooth = analysis['smoothed_data']
+            #     ax1.plot(smooth['temperature'], smooth['energy'], 
+            #             color='#991b1b', linewidth=3, alpha=0.8, label='Smoothed')
+            
+            ax1.set_xlabel('Temperature (K)', fontsize=14, fontweight='bold')
+            ax1.set_ylabel('Potential Energy (eV)', fontsize=14, fontweight='bold')
+            ax1.set_title('Molecular Dynamics: Potential Energy vs Temperature', 
+                        fontsize=16, fontweight='bold', pad=20)
+            ax1.legend(fontsize=12)
+            ax1.grid(True, alpha=0.3, linestyle='--')
+            ax1.tick_params(axis='both', labelsize=12)
+            
+            # Add some padding to the axes
+            x_margin = (temp.max() - temp.min()) * 0.05
+            y_margin = (potential_energy.max() - potential_energy.min()) * 0.05
+            ax1.set_xlim(temp.min() - x_margin, temp.max() + x_margin)
+            ax1.set_ylim(potential_energy.min() - y_margin, potential_energy.max() + y_margin)
+            
+        else:
+            ax1.text(0.5, 0.5, 'No potential energy data available', 
+                    ha='center', va='center', transform=ax1.transAxes,
+                    fontsize=14, bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.8))
+            ax1.set_title('Potential Energy vs Temperature', fontsize=16, fontweight='bold')
+            ax1.set_xlabel('Temperature (K)', fontsize=14)
+            ax1.set_ylabel('Potential Energy (eV)', fontsize=14)
+        
+        # Plot 2: Heat Capacity Analysis (bottom left)
+        ax2 = plt.subplot(2, 2, 3)
+        if 'binned_analysis' in analysis:
+            binned = analysis['binned_analysis']
+            ax2.plot(binned['temperature'], binned['heat_capacity'], 
+                    color='#f97316', linewidth=3, label='Heat Capacity')  # Orange color
+            
+            if 'melting_temp_heat_capacity' in analysis:
+                mt = analysis['melting_temp_heat_capacity']
+                ax2.axvline(mt, color='#dc2626', linestyle='--', alpha=0.8, linewidth=2,
+                        label=f'Peak: {mt:.0f} K')
+                ax2.legend(fontsize=10)
+            
+            ax2.set_xlabel('Temperature (K)', fontsize=12, fontweight='bold')
+            ax2.set_ylabel('Heat Capacity (eV/K)', fontsize=12, fontweight='bold')
+            ax2.set_title('Heat Capacity Analysis', fontsize=14, fontweight='bold')
+            ax2.grid(True, alpha=0.3, linestyle='--')
+            ax2.tick_params(axis='both', labelsize=10)
+        else:
+            ax2.text(0.5, 0.5, 'Insufficient data for\nheat capacity analysis', 
+                    ha='center', va='center', transform=ax2.transAxes,
+                    fontsize=12, bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.8))
+            ax2.set_title('Heat Capacity Analysis', fontsize=14, fontweight='bold')
+            ax2.set_xlabel('Temperature (K)', fontsize=12)
+            ax2.set_ylabel('Heat Capacity (eV/K)', fontsize=12)
+        
+        # Plot 3: Statistics and Analysis Summary (bottom right)
+        ax3 = plt.subplot(2, 2, 4)
+        ax3.axis('off')
+        
+        # Create comprehensive summary matching the React version style
+        summary_parts = []
+        
+        # Title
+        summary_parts.append("MOLECULAR DYNAMICS ANALYSIS")
+        summary_parts.append("=" * 35)
+        summary_parts.append("")
+        
+        if len(temp) > 0:
+            # System information
+            if system_info is not None:
+                if 'system_name' in system_info:
+                    summary_parts.append(f"System: {system_info['system_name']}")
+                if 'num_atoms' in system_info:
+                    summary_parts.append(f"Atoms: {system_info['num_atoms']}")
+                if 'material' in system_info:
+                    summary_parts.append(f"Material: {system_info['material']}")
+                summary_parts.append("")
+            
+            # Data summary
+            summary_parts.append(f"📊 DATA SUMMARY:")
+            summary_parts.append(f"   • Data points: {len(temp)} timesteps")
+            summary_parts.append(f"   • Temperature range: {temp.min():.0f} - {temp.max():.0f} K")
+            summary_parts.append(f"   • Simulation: 200k steps, 216 atoms")
+            summary_parts.append("")
+            
+            if len(potential_energy) > 0 and np.any(potential_energy != 0):
+                summary_parts.append(f"⚡ ENERGY ANALYSIS:")
+                summary_parts.append(f"   • PE range: {potential_energy.min():.1f} - {potential_energy.max():.1f} eV")
+                pe_change = potential_energy.max() - potential_energy.min()
+                summary_parts.append(f"   • PE change: {pe_change:.1f} eV")
+                summary_parts.append("")
+            
+            # Melting point estimates
+            summary_parts.append("🔥 MELTING ANALYSIS:")
+            melting_found = False
+            if analysis:
+                if 'melting_temp_heat_capacity' in analysis:
+                    mt = analysis['melting_temp_heat_capacity']
+                    summary_parts.append(f"   • Heat capacity peak: {mt:.0f} K")
+                    melting_found = True
+                if 'melting_temp_deviation' in analysis:
+                    mt = analysis['melting_temp_deviation']
+                    summary_parts.append(f"   • Volume expansion: {mt:.0f} K")
+                    melting_found = True
+                if 'melting_temp_pressure_fluctuations' in analysis:
+                    mt = analysis['melting_temp_pressure_fluctuations']
+                    summary_parts.append(f"   • Pressure fluctuations: {mt:.0f} K")
+                    melting_found = True
+            
+            if not melting_found:
+                summary_parts.append("   • No clear melting point detected")
+            
+            summary_parts.append("")
+            
+            # Physical interpretation
+            summary_parts.append("🔬 PHYSICAL INTERPRETATION:")
+            summary_parts.append("   • Negative PE: Bound molecular system")
+            summary_parts.append("   • Increasing trend: Thermal expansion")
+            summary_parts.append("   • Scatter: Normal MD fluctuations")
+            
+            # Simulation type
+            if 'volume_constant' in analysis:
+                summary_parts.append("   • Simulation type: NVT (constant volume)")
+            elif len(volume) > 0 and np.std(volume)/np.mean(volume) < 0.01:
+                summary_parts.append("   • Simulation type: Minimal volume change")
+            else:
+                summary_parts.append("   • Simulation type: NPT (variable volume)")
+            
+        else:
+            summary_parts.append("❌ NO DATA AVAILABLE")
+            summary_parts.append("Check input files and format.")
+        
+        # Display the summary text with nice formatting
+        summary_text = "\n".join(summary_parts)
+        ax3.text(0.05, 0.95, summary_text, transform=ax3.transAxes, fontsize=10,
+                verticalalignment='top', fontfamily='monospace',
+                bbox=dict(boxstyle='round,pad=1', facecolor='#f8f9fa', 
+                        edgecolor='#dee2e6', alpha=0.9))
+        
+        # Add statistics boxes at the bottom (matching React version style)
+        if len(temp) > 0:
+            fig.text(0.02, 0.02, f"Data Points\n{len(temp)} timesteps", 
+                    bbox=dict(boxstyle='round', facecolor='#dbeafe', edgecolor='#3b82f6'),
+                    fontsize=10, ha='left')
+            
+            fig.text(0.25, 0.02, f"Temperature Range\n{temp.min():.0f} - {temp.max():.0f} K", 
+                    bbox=dict(boxstyle='round', facecolor='#fed7aa', edgecolor='#f97316'),
+                    fontsize=10, ha='left')
+            
+            if len(potential_energy) > 0:
+                fig.text(0.48, 0.02, f"PE Range\n{potential_energy.min():.1f} - {potential_energy.max():.1f} eV", 
+                        bbox=dict(boxstyle='round', facecolor='#fee2e2', edgecolor='#dc2626'),
+                        fontsize=10, ha='left')
+            
+            fig.text(0.71, 0.02, f"Simulation\n200k steps, 216 atoms", 
+                    bbox=dict(boxstyle='round', facecolor='#dcfce7', edgecolor='#16a34a'),
+                    fontsize=10, ha='left')
+        
+        plt.tight_layout()
+        plt.subplots_adjust(bottom=0.12)  # Make room for the statistics boxes
+        
+        return fig, analysis

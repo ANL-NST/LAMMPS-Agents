@@ -107,10 +107,14 @@ class AgentFactory:
     def create_lammps_agent(self):
         """Create LAMMPS input creator agent."""
         from src.system_messages.lammps_input_creator_message import LAMMPS_INPUT_CREATOR_SYSTEM_PROMPT
-        
+        lammps_llm_config = {
+            "model": "o3",
+            'api_key': OPENAI_API_KEY,
+            # 'temperature': 0,
+        }
         return ConversableAgent(
             name="LAMMPSInputCreator",
-            llm_config=self.llm_config,
+            llm_config=lammps_llm_config,
             human_input_mode="ALWAYS",
             code_execution_config=False,
             system_message=LAMMPS_INPUT_CREATOR_SYSTEM_PROMPT

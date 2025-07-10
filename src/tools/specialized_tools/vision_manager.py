@@ -161,7 +161,7 @@ Review your assessment carefully before concluding and providing an answer.
             base64_image = self._encode_image(image_path)
             
             response = openai.chat.completions.create(
-                model="o3",  #gpt-4o
+                model= "gpt-4o", # "o3", # #gpt-4o
                 messages=[
                     {
                         "role": "user",
@@ -172,10 +172,9 @@ Review your assessment carefully before concluding and providing an answer.
 You are a Vision Agent specialized in analyzing molecular dynamics simulation visualizations created by OVITO.
 
 Check if there are two phases shown in the image, such as a solid-liquid interface. 
-We need to have a structure that is around 50:50 solid-liquid. So around 50% of the structure should look disordered and liquid-like,
-while the other 50% should look crystalline and solid-like.
-If it is not 50:50 then we need to resubmit the LAMMPS simulation and freeze or unfreeze atoms. When you 
-are provided with an image of the interface then critically assess if it is 50:50 solid-liquid.
+We need to have a structure that is approximatelly around 50:50 solid-liquid. So almost half of the structure should look disordered and liquid-like,
+while the other half should look crystalline and solid-like.
+If it is not approximately 50:50 then we need to resubmit the LAMMPS simulation and freeze or unfreeze atoms.
                                 """
                             },
                             {
@@ -189,6 +188,64 @@ are provided with an image of the interface then critically assess if it is 50:5
                 ],
                 # max_tokens=200,
             )        
+            return response.choices[0].message.content
+            
+        except FileNotFoundError as e:
+            return f"{str(e)}"
+        except Exception as e:
+            return f"Vision analysis failed: {str(e)}"
+        
+
+    def analyze_melting_point_plots(self, image_path: str) -> str:
+        """
+        Analyze the melting point simulation plots.
+        
+        Args:
+            image_path: Path to the simulation image (relative to workdir or absolute)
+            
+        Returns:
+            String description of the analysis
+        """
+        try:
+            openai.api_key = self.api_key
+            
+            # Encode the image
+            base64_image = self._encode_image(image_path)
+            
+            response = openai.chat.completions.create(
+                model="o3",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": """
+You are a Vision Agent specialized in analyzing molecular dynamics plots for melting point calculation.
+
+Analyze the potential energy vs temperature and heat capacity vs temperature plots (usually named melting_analysis.png):
+
+1. **Heat Capacity Analysis**: Verify there is a clear peak in the heat capacity curve, indicating a phase transition
+2. **Energy Correlation**: Check if the heat capacity peak temperature corresponds to an inflection point or steeper slope change in the potential energy curve (not necessarily a sharp discontinuous jump, as melting transitions can be gradual)
+3. **Peak Quality**: Ensure the heat capacity peak is well-defined and not at the boundary of the temperature range
+4. **Coverage Assessment**: If no clear peak exists, or if the peak occurs near the temperature boundaries, recommend extending the simulation temperature range
+
+Note: For crystalline melting, expect a gradual S-shaped increase in potential energy rather than an abrupt discontinuous jump.
+
+                                """
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{base64_image}"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                # max_tokens=200,
+            )
+            
             return response.choices[0].message.content
             
         except FileNotFoundError as e:
@@ -248,12 +305,24 @@ def analyze_solid_liquid_interface(image_path: str, api_key: str = None, workdir
     return manager.analyze_solid_liquid_interface(image_path)
 
 
+def analyze_melting_point_plots(image_path: str, api_key: str = None, workdir: str = None) -> str:
+    """Standalone function for backward compatibility."""
+    if workdir is None:
+        workdir = os.getcwd()
+    
+    manager = VisionManager(workdir)
+    if api_key:
+        manager.api_key = api_key
+    
+    return manager.analyze_melting_point_plots(image_path)
+
+
 if __name__ == "__main__":
 
-    workdir = "C:\\Users\\kvriz\\Desktop\\LAMMPS-Agents\\lammps_run_test"
+    workdir = r"C:\Users\kvriz\Desktop\LAMMPS-Agents\ovito_frames_benchmark"
     manager = VisionManager(workdir)
     
-    print(manager.list_images_in_workdir())
-
-    result = manager.analyze_melting_point_simulation("melt_visualization.png") # melt_visualization.png  #melting_visualization.png 
+    # print(manager.list_images_in_workdir())
+    # result = manager.analyze_solid_liquid_interface("test_frame_1.png")
+    result = manager.analyze_melting_point_simulation("test_frame_10.png") # melt_visualization.png  #melting_visualization.png 
     print(f"Analysis result: {result}")

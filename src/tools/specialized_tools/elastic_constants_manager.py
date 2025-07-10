@@ -27,8 +27,8 @@ class ElasticConstantsManager:
         self.work_dir = Path(work_dir)
         self.work_dir.mkdir(exist_ok=True)
         
-        if template_dir is None:
-            template_dir = "src/tools/default_files"
+        # if template_dir is None:
+        template_dir = "C:\Users\kvriz\Desktop\LAMMPS-Agents\src\tools\default_files" #"src/tools/default_files"
         
         self.template_dir = Path(template_dir)
         self.logger = self._setup_logging()
