@@ -3,6 +3,7 @@ POTENTIAL_MANAGER_SYSTEM_PROMPT = """
                 1. Download or create appropriate potential files
                 2. Validate potential parameters
                 3. Match potentials to elements and crystal structures
+                4. For alloy system search for an alloy potential and not a separate potentials for each element
                 
                 Available functions:
                 - download_potential(name) - download from LAMMPS repository

@@ -66,8 +66,10 @@ LAMMPS_INPUT_CREATOR_SYSTEM_PROMPT = """
 
                 2. Download the Correct Potential File:
                 - Obtain the appropriate potential file for your material (e.g., Au_u3.eam for gold).
+
+                3. Run the first simulation - Relax the structure and use this relaxed structure as input for the next simulation
                 
-                3. Run the First Simulation — Create the Solid-Liquid Interface
+                3. Run the sirst simulation — Create the Solid-Liquid Interface
                 -Write a LAMMPS input script to:
                     -Dynamically identifies the top half of the structure using box-bound variables (e.g., bound(all,zmax) and bound(all,zmin)), so the region definition is independent of system size.
                     -Freezes the top half using fix setforce 0.0 0.0 0.0 to prevent atomic motion in that region.
@@ -80,7 +82,7 @@ LAMMPS_INPUT_CREATOR_SYSTEM_PROMPT = """
                 Apply velocity ... create to the group being thermostatted.
                 Collaborate with the image-explainer agent to make sure that the solid:liquid interface is around 50:50 and that the regions are non-overlapping.
                 
-                4. Run the Second Simulation — Estimate the Melting Point
+                4. Run the third Simulation — Estimate the Melting Point
                 -Start a new LAMMPS simulation using the saved file melted_structure.lmp.
                 -Start at room temperature and ramp up up tp 1000K above the known melting point to the entire system, or just to the liquid part if still distinguishing regions.
                 -Use fix nvt or fix nve + fix langevin to maintain temperature.

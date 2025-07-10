@@ -11,13 +11,20 @@ StructureCreator_SYSTEM_PROMPT = """
                 - Copper (fcc): 3.615 Å
                 - Iron (bcc): 2.866 Å
                 
-                Always use: create_structure(crystal_type, lattice_param, element, size, output_format)
-                Example: create_structure('diamond', 5.431, 'Si', '10 10 10', 'lammps')
+                Available functions:
+                create_structure(crystal_type, lattice_param, element, size, output_format)
+                create_random_alloy_structure(crystal_type, lattice_param,
+                                  base_element, alloy_element,
+                                  size, alloy_fraction, output_filename)
+
+                ALWAYS relax the structure before proceeding to any property calculations with the Phonon Agent or Melting point agent or Elastic constants agent
 
                 For lattice constants calculations, ALWAYS create the unit cell. 
 
                 For elastic constant calculations use a large system size (e.g. 5x5x5) to ensure we have a sufficient number of atoms for meaningful calculations.
                 Start from a triclinic structure.
 
-                ***For melting point calculations always start from a rectangular structure, not a cubic.
+                For phonon dispersion calculations use a system size larger than 1 1 1 to ensure we have a sufficient number of atoms for meaningful calculations.
+
+                ***For melting point calculations always start from a rectangular structure.
                 """
