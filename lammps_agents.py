@@ -1,5 +1,6 @@
 # lammps_agents.py
 import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import autogen
 from autogen.coding import LocalCommandLineCodeExecutor
 from autogen.agentchat.contrib.capabilities.teachability import Teachability
@@ -14,7 +15,7 @@ from typing import Any
 nest_asyncio.apply()
 from src.tools.llm_config import get_llm_config
 from src.tools.validation_tools import ValidationManager
-
+import tiktoken
 # def is_termination_msg(message):
 #     return (
 #         isinstance(message, dict)
@@ -22,7 +23,7 @@ from src.tools.validation_tools import ValidationManager
 #     )
 
 class AutoGenSystem:
-    def __init__(self, llm_type: str, workdir: str, polybot_file_path: str):
+    def __init__(self, llm_type: str, workdir: str):
         print("Starting Agentic System initialization...")
 
         self.llm_type = llm_type
@@ -35,8 +36,8 @@ class AutoGenSystem:
             print(f"Created working directory: {self.workdir}")
 
         # Read polybot file
-        with open(polybot_file_path, 'r', encoding="utf-8") as polybot_file:
-            self.polybot_file = ''.join(polybot_file.readlines())
+        # with open(polybot_file_path, 'r', encoding="utf-8") as polybot_file:
+        #     self.polybot_file = ''.join(polybot_file.readlines())
 
         # Initialize executor
         self.executor = LocalCommandLineCodeExecutor(
@@ -51,7 +52,7 @@ class AutoGenSystem:
         self._setup_agents()               # Then agents (needs specialized tools)
         self._setup_function_registry()    # Functions (needs agents and managers)
         self._setup_group_chat()           # Group chat (needs agents)
-        # self._setup_teachability()         # Teachability last
+        self._setup_teachability()         # Teachability last
         print("AutoGenSystem ready!")
 
 
@@ -234,11 +235,12 @@ class AutoGenSystem:
         """Set up teachability for the agents."""
         try:
             print("Setting up teachability...")
-
+            base_dir = os.path.abspath("./") 
             self.teachability = Teachability(
                 verbosity=0,
                 reset_db=False,
-                path_to_db_dir=f"./teachability_db_{self.llm_type}",
+                path_to_db_dir = os.path.join(base_dir, f"./teachability_db_{self.llm_type}"),
+                # path_to_db_dir=f"./teachability_db_{self.llm_type}",
                 recall_threshold=6,
                 llm_config=self.llm_config
             )
@@ -252,7 +254,11 @@ class AutoGenSystem:
             self.logger.error(f"Teachability setup failed: {e}")
             print("Continuing without teachability...")
 
-
+    def count_tokens(messages, model="gpt-4o"):
+        encoding = tiktoken.encoding_for_model(model)
+        text = "\n".join(m.get("content", "") for m in messages)
+        return len(encoding.encode(text))
+    
     def initiate_chat(self, prompt: str) -> Any:
 
         try:
@@ -368,39 +374,53 @@ class AutoGenSystem:
             
         except Exception as e:
             print(f"Failed to save chat result: {e}")
-  
+
+    
 
 if __name__ == "__main__":
     try:
-        workdir = "lammps_run_test"
+        workdir = "lammps_run_test_Cu_reax"
         polybot_file_path = 'operation_instructions.py'
         llm_type = "gpt4o" #"gpt-4.1" #
 
-        print("🔥 Initializing AutoGen LAMMPS System...")
-
-        # Initialize the system
         autogen_system = AutoGenSystem(
-            llm_type=llm_type,
-            workdir=workdir,
-            polybot_file_path=polybot_file_path
+            llm_type = llm_type,
+            workdir=workdir
         )
 
-        # Activate this if you want to provide a specific input from previous results
-        # previous_chat = r"C:\Users\kvriz\Desktop\LAMMPS-Agents\results\chat_result_20250613_195737.txt"
-        # #r"C:\Users\kvriz\Desktop\LAMMPS-Agents\results\chat_result_20250605_100215.txt"
-        # autogen_system._setup_group_chat(previous_chat)
+        # print("🔥 Initializing AutoGen LAMMPS System...")
+        # base_dir = os.path.abspath("./") 
+        # prompt_1a = """Calculate the lattice constants and cohesive energy of gold using LAMMPS and use Au_u3.eam potential.""" # If restarting """Continue from where we left off - what's the next step?""" #
+
+        # for i in range(0,5):
+        #     workdir = os.path.join(base_dir, f"lammps_run_test_{i}_lattice_Au")
+        #     print(f"LAMMPS run {i+1}")
+        # # Initialize the system
+        #     autogen_system = AutoGenSystem(
+        #         llm_type=llm_type,
+        #         workdir=workdir
+        #         # polybot_file_path=polybot_file_path
+
+        #     )
+        #     chat_result = autogen_system.initiate_chat(prompt_1a)
+
+        #     print(f"Run {i+1} completed successfully!")
+
 
         print("Starting LAMMPS calculation...")
-        prompt_1a = """Calculate the lattice constants of gold using LAMMPS.""" # If restarting """Continue from where we left off - what's the next step?""" #
-        prompt_1b = """Calculate the lattice constants for a gold-copper alloy using LAMMPS."""
+        prompt_1a = """Calculate the lattice constants and cohesive energy of Copper using use reactive potential LAMMPS. 
+                    """ # If restarting """Continue from where we left off - what's the next step?""" #
+        prompt_1b = """Calculate the lattice constants and cohesive energy for a Nickel-copper alloy using LAMMPS. Use existing potential file"""
+        prompt_1c = """Write the lammps input script to Calculate the cohesive energy for a Nickel-copper alloy."""
 
-        prompt_2a = """Compute the elastic constants of gold."""
-        prompt_2b = """Compute the elastic constants of a gold-copper alloy. Start from where we left off in the previous chat Time to analyse the results and get the elastic constants matrix."""
+        prompt_2a = """Compute the elastic constants of Silicon using LAMMPS."""
+        prompt_2b = """Compute the elastic constants of a Nickel-copper alloy."""
         
-        prompt_3a = """Calculate the phonon dispersion for gold."""
-        prompt_3b = """Calculate the phonon dispersion for gold-copper."""
+        prompt_3a = """Calculate the phonon dispersion for Silicon"""
+        prompt_3b =""" Calculate the phonon dispersion for Nickel-copper Alloy."""
+        prompt_3c = """Search for Band path and symmetry points for phonon dispersion of Nickel-Copepr alloy"""
 
-        prompt_4a = """Perform a melting point simulation for gold using LAMMPS and the provided potential file."""
+        prompt_4a = """Perform a melting point simulation for Silicon  using LAMMPS.""" #this is restarting Continue from where we left off - what's the next step? #"""
         prompt_4b = """Check the image melting_visualization.png for melting."""# <img melting_visualization.png> and <img full_melt_visualization.png> and comment on which one is a melted structure."""
         #"""Analyze the output of the melting point simulation and create the plots.""" #"""Perform a melting point simulation for a gold-copper alloy."""
         # prompt_3b = """Check the "melted_structure_visualization.png" and decide if the structure is fully melted or not.""" #
@@ -409,8 +429,9 @@ if __name__ == "__main__":
         # rerun the lammps simulation with co
         # rrected parameters"""
 
-        chat_result = autogen_system.initiate_chat(prompt_3a)
-
+        chat_result = autogen_system.initiate_chat(prompt_1a)
+        # print(f"Conversation token count: {autogen_system.count_tokens(chat_result)}")
+        
         print("Run completed successfully!")
 
     except Exception as e:

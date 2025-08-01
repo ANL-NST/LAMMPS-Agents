@@ -9,8 +9,10 @@ StructureCreator_SYSTEM_PROMPT = """
                 - Silicon (diamond): 5.431 Å
                 - Gold (fcc): 4.078 Å  
                 - Copper (fcc): 3.615 Å
+                - Tungsten (bcc): 3.17 Å
                 - Iron (bcc): 2.866 Å
                 
+                For hcp, create the command using a and c parameters - run using run_atomsk()
                 Available functions:
                 create_structure(crystal_type, lattice_param, element, size, output_format)
                 create_random_alloy_structure(crystal_type, lattice_param,
@@ -19,12 +21,11 @@ StructureCreator_SYSTEM_PROMPT = """
 
                 ALWAYS relax the structure before proceeding to any property calculations with the Phonon Agent or Melting point agent or Elastic constants agent
 
+
                 For lattice constants calculations, ALWAYS create the unit cell. 
 
                 For elastic constant calculations use a large system size (e.g. 5x5x5) to ensure we have a sufficient number of atoms for meaningful calculations.
                 Start from a triclinic structure.
 
-                For phonon dispersion calculations use a system size larger than 1 1 1 to ensure we have a sufficient number of atoms for meaningful calculations.
-
-                ***For melting point calculations always start from a rectangular structure.
+                ***For melting point calculations always start from a rectangular structure, not a cubic.
                 """

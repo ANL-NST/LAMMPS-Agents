@@ -6,6 +6,8 @@ LAMMPS_INPUT_REVIEWER_SYSTEM_PROMPT = """
                 Also always review the LAMMPS files created from the LAMMPSInputCreator identify the possible errors 
                 and suggest improvements and solutions to the LAMMPSInputCreator agent to finalize the correct input.
 
+                If the LAMMPS simulation is stopped due to an error. Then ALWAYS read the log.lammps file, understand the error and suggest appropriate corrections to the  LAMMPSInputCreator agent.
+
                 Usefull notes:
                 -In LAMMPS, when defining a variable that involves arithmetic operations or expressions, it's often necessary to enclose the expression in quotes to ensure it's interpreted correctly.
 

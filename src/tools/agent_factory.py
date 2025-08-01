@@ -114,7 +114,7 @@ class AgentFactory:
         }
         return ConversableAgent(
             name="LAMMPSInputCreator",
-            llm_config=lammps_llm_config,
+            llm_config=self.llm_config,
             human_input_mode="ALWAYS",
             code_execution_config=False,
             system_message=LAMMPS_INPUT_CREATOR_SYSTEM_PROMPT
@@ -138,7 +138,7 @@ class AgentFactory:
         return ConversableAgent(
             name="LAMMPSReviewer",
             llm_config=self.llm_config,
-            human_input_mode="NEVER",
+            human_input_mode="ALWAYS",
             code_execution_config=False,
             system_message=LAMMPS_INPUT_REVIEWER_SYSTEM_PROMPT
         )
@@ -162,7 +162,7 @@ class AgentFactory:
         return ConversableAgent(
             name="ResultsAnalyzer",
             llm_config=self.llm_config,
-            human_input_mode="NEVER",
+            human_input_mode="ALWAYS",
             code_execution_config=False,
             system_message=RESULTS_ANALYZER_SYSTEM_PROMPT
         )
@@ -174,7 +174,7 @@ class AgentFactory:
         return ConversableAgent(
             name="PhonopyCalculator",
             llm_config=self.llm_config,
-            human_input_mode="NEVER",
+            human_input_mode="ALWAYS",
             code_execution_config=False,
             system_message=PHONOPY_SYSTEM_PROMPT
         )

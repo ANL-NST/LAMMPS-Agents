@@ -1,4 +1,5 @@
 from autogen import register_function
+import subprocess
 import os
 
 class FunctionRegistry:
@@ -66,6 +67,14 @@ class FunctionRegistry:
                 crystal_type, lattice_param, element, size, output_format
             )
         
+        def run_atomsk(command: str) -> str:
+            try:
+                result = subprocess.run(command, shell=True, capture_output=True, text=True)
+                return result.stdout if result.returncode == 0 else result.stderr
+            except Exception as e:
+                return str(e)
+            
+        
         def create_random_alloy_structure(crystal_type: str, lattice_param: float,
                                   base_element: str, alloy_element: str,
                                   size: str, alloy_fraction: float,
@@ -87,6 +96,14 @@ class FunctionRegistry:
             executor=self.lammps_admin,
             name="create_structure",
             description="Create crystal structure of a single element. Parameters: crystal_type (str), lattice_param (float), element (str), size (str like '10 10 10'), output_format (str, default 'lammps')",
+        )
+
+        register_function(
+            run_atomsk,
+            caller=self.structure_agent,
+            executor=self.lammps_admin,
+            name="create_hcp_structure",
+            description="Create hcp crystal structure of a single element. output_format (str, default 'lammps')",
         )
 
         register_function(
@@ -280,44 +297,44 @@ class FunctionRegistry:
         """Register functions for HPCExecutor agent."""
         print("Registering HPC functions...")
         
-        def upload_files(files: str = "*", remote_dir: str = "lammps_run_test") -> str:
-            return self.hpc_manager.upload_files(files, remote_dir)
+        # def upload_files(files: str = "*", remote_dir: str = "lammps_run_test") -> str:
+        #     return self.hpc_manager.upload_files(files, remote_dir)
         
         def run_lammps(input_file: str = "input.lammps", remote_dir: str = "lammps_run_test") -> str:
             return self.hpc_manager.run_lammps(input_file, remote_dir)
         
-        def download_results(remote_dir: str = "lammps_run_test", file_pattern: str = "*.dump *.log *.data") -> str:
-            return self.hpc_manager.download_results(remote_dir, file_pattern)
+        # def download_results(remote_dir: str = "lammps_run_test", file_pattern: str = "*.dump *.log *.data") -> str:
+        #     return self.hpc_manager.download_results(remote_dir, file_pattern)
         
-        def run_command(command: str) -> str:
-            """Execute shell command in working directory."""
-            import subprocess
-            try:
-                result = subprocess.run(
-                    command, shell=True, cwd=self.workdir,
-                    capture_output=True, text=True, timeout=120
-                )
-                output = f"Command: {command}\nExit code: {result.returncode}\n"
-                if result.stdout:
-                    output += f"STDOUT:\n{result.stdout}\n"
-                if result.stderr:
-                    output += f"STDERR:\n{result.stderr}\n"
-                return output
-            except Exception as e:
-                return f"Command failed: {str(e)}"
+        # def run_command(command: str) -> str:
+        #     """Execute shell command in working directory."""
+        #     import subprocess
+        #     try:
+        #         result = subprocess.run(
+        #             command, shell=True, cwd=self.workdir,
+        #             capture_output=True, text=True, timeout=120
+        #         )
+        #         output = f"Command: {command}\nExit code: {result.returncode}\n"
+        #         if result.stdout:
+        #             output += f"STDOUT:\n{result.stdout}\n"
+        #         if result.stderr:
+        #             output += f"STDERR:\n{result.stderr}\n"
+        #         return output
+        #     except Exception as e:
+        #         return f"Command failed: {str(e)}"
         
-        def run_all_lammps_displacements(remote_dir: str = "lammps_run_test") -> str:
-            return self.hpc_manager.run_all_lammps_displacements(remote_dir)
+        # def run_all_lammps_displacements(remote_dir: str = "lammps_run_test") -> str:
+        #     return self.hpc_manager.run_all_lammps_displacements(remote_dir)
 
         # def download_force_dumps(remote_dir: str = "lammps_run_test") -> str:
         #     return self.hpc_manager.download_force_dumps(remote_dir)
 
         hpc_functions = [
-            (upload_files, "upload_files", "Upload files to Carbon HPC. Parameters: files (str, default '*'), remote_dir (str, default 'lammps_run_test')"),
+            # (upload_files, "upload_files", "Upload files to Carbon HPC. Parameters: files (str, default '*'), remote_dir (str, default 'lammps_run_test')"),
             (run_lammps, "run_lammps", "Run LAMMPS on Carbon. Parameters: input_file (str, default 'input.lammps'), remote_dir (str, default 'lammps_run_test')"),
-            (download_results, "download_results", "Download results from Carbon. Parameters: remote_dir (str, default 'lammps_run_test'), file_pattern (str, default '*.dump *.log *.data')"),
-            (run_command, "run_command", "Execute shell command. Parameter: command (str)"),
-            (run_all_lammps_displacements, "run_all_lammps_displacements", "Use it for phonon dispersion calculations. Runs all the LAMMPS calculations inside the displacements directory. Parameters: remote_dir (str, default 'lammps_run_test')"),
+            # (download_results, "download_results", "Download results from Carbon. Parameters: remote_dir (str, default 'lammps_run_test'), file_pattern (str, default '*.dump *.log *.data')"),
+            # (run_command, "run_command", "Execute shell command. Parameter: command (str)"),
+            # (run_all_lammps_displacements, "run_all_lammps_displacements", "Use it for phonon dispersion calculations. Runs all the LAMMPS calculations inside the displacements directory. Parameters: remote_dir (str, default 'lammps_run_test')"),
             # (download_force_dumps, "download_force_dumps", "Use it for phonon dispersion calculations. Download force dumps from Carbon HPC. Parameters: remote_dir (str, default 'lammps_run_test')"),
         ]
         
@@ -762,35 +779,67 @@ class FunctionRegistry:
         """Register functions for PhonopyCalculator agent."""
         print("  🌊 Registering phonopy functions...")
         
-        def create_poscar_from_lmp(lmp_filename: str) -> str:
-            return self.phonopy_manager.create_poscar_from_lmp(lmp_filename)
+    #     def create_poscar_from_lmp(lmp_filename: str) -> str:
+    #         return self.phonopy_manager.create_poscar_from_lmp(lmp_filename)
         
-        def create_displacement_yaml(dim: str) -> str:
-            return self.phonopy_manager.create_displacement_yaml(dim)
+    #     def create_displacement_yaml(dim: str) -> str:
+    #         return self.phonopy_manager.create_displacement_yaml(dim)
         
-        def create_displacement_files() -> str:
-            return self.phonopy_manager.create_displacement_files()
-        
-
-        def create_lammps_input_for_displacements(potential_file: str) -> str:
-            return self.phonopy_manager.create_lammps_input_for_displacements(potential_file)
-
-        def collect_forces_from_displacements() -> str:
-            return self.phonopy_manager.collect_forces_from_displacements()
+    #     def create_displacement_files() -> str:
+    #         return self.phonopy_manager.create_displacement_files()
         
 
-        def generate_band_conf_and_plot() -> str:
-            return self.phonopy_manager.generate_band_conf_and_plot()
+    #     def create_lammps_input_for_displacements(potential_file: str) -> str:
+    #         return self.phonopy_manager.create_lammps_input_for_displacements(potential_file)
+
+    #     def collect_forces_from_displacements() -> str:
+    #         return self.phonopy_manager.collect_forces_from_displacements()
         
-        phonopy_functions = [
-            (create_poscar_from_lmp, "create_poscar_from_lmp", "Convert the structure file from atomsk to POSCAR format, lmp_filename (str, optional). Auto-detects file if not provided."),
-            (create_displacement_yaml, "create_displacement_yaml", "Create displacement YAML file using phonopy and the existing POSCAR. Parameters: dim (str, optional)."),
-            (create_displacement_files, "create_displacement_files", "Create displaced structures using phonopy and saves as POSCARs. Parameters: None - uses existing displacement YAML."),
-            (create_lammps_input_for_displacements, "create_lammps_input_for_displacements", "Create LAMMPS input files for phonon displacements. Parameters: potential_file (str)."),
-            (collect_forces_from_displacements, "collect_forces_from_displacements", "Collect forces from LAMMPS displacements and generates the FORCE_SETS file."),
-            (generate_band_conf_and_plot, "generate_band_conf_and_plot", "Generate band structure configuration and plot. Parameterer: npoints(int, optional) ."),
+
+    #     def generate_band_conf_and_plot() -> str:
+    #         return self.phonopy_manager.generate_band_conf_and_plot()
+        
+    #     phonopy_functions = [
+    #         (create_poscar_from_lmp, "create_poscar_from_lmp", "Convert the structure file from atomsk to POSCAR format, lmp_filename (str, optional). Auto-detects file if not provided."),
+    #         (create_displacement_yaml, "create_displacement_yaml", "Create displacement YAML file using phonopy and the existing POSCAR. Parameters: dim (str, optional)."),
+    #         (create_displacement_files, "create_displacement_files", "Create displaced structures using phonopy and saves as POSCARs. Parameters: None - uses existing displacement YAML."),
+    #         (create_lammps_input_for_displacements, "create_lammps_input_for_displacements", "Create LAMMPS input files for phonon displacements. Parameters: potential_file (str)."),
+    #         (collect_forces_from_displacements, "collect_forces_from_displacements", "Collect forces from LAMMPS displacements and generates the FORCE_SETS file."),
+    #         (generate_band_conf_and_plot, "generate_band_conf_and_plot", "Generate band structure configuration and plot. Parameterer: npoints(int, optional) ."),
+    #     ]
+        
+    #     for func, name, description in phonopy_functions:
+    #         register_function(
+    #             func,
+    #             caller=self.phonopy_agent,
+    #             executor=self.lammps_admin,
+    #             name=name,
+    #             description=description,
+    #         )
+        def run_command_ph(command: str) -> str:
+            """Execute shell command in working directory."""
+            import subprocess
+            try:
+                result = subprocess.run(
+                    command, shell=True, cwd=self.workdir,
+                    capture_output=True, text=True, timeout=120
+                )
+                output = f"Command: {command}\nExit code: {result.returncode}\n"
+                if result.stdout:
+                    output += f"STDOUT:\n{result.stdout}\n"
+                if result.stderr:
+                    output += f"STDERR:\n{result.stderr}\n"
+                return output
+            except Exception as e:
+                return f"Command failed: {str(e)}"
+        def save_band_conf(content: str) -> str:
+            return self.phonopy_manager.save_band_conf(content)
+        
+        phonopy_functions=[
+                (run_command_ph, "run_command", "Execute shell command. Parameter: command (str)"),
+                (save_band_conf, "save_band_conf", "Save the  band structure configuration from web surfer agent output.."),
+                
         ]
-        
         for func, name, description in phonopy_functions:
             register_function(
                 func,

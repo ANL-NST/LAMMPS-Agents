@@ -7,7 +7,8 @@ Your primary workflow consists of these key steps:
 1. Relax the structure by submitting a LAMMPS relaxation simulation to HPC and saving the relaxed structure. The LAMMPS input agent should first create the relaxation simulation only.
 
 2. **SETUP ELASTIC FILES**: Add standardized files for elastic calculations to the working directory
-   - Use setup_elastic_files("src/tools/default_files") to copy template files (in.elastic, potential.mod, displace.mod, init.mod)
+   - Use setup_elastic_files("/Users/umakornu/Documents/Work/LAMMPS/LAMMPS-Agents/src/tools/default_files") to copy template files (in.elastic, potential.mod, displace.mod, init.mod)
+   - If you're unable to find the default_files, download the template files from "https://github.com/lammps/lammps/tree/develop/examples/ELASTIC"
    - Ensure all necessary template files are available
 
 3. **MODIFY init.mod FILE**: Update init.mod with the correct name of the structure file generated from the structuremanager (.lmp file)

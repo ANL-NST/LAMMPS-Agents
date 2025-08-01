@@ -17,4 +17,11 @@ WEBSURFER_SYSTEM_PROMPT = """
                 Only look for potentials online if there are not any existing links in the Potential Manager
 
                 RULES: Keep searching until the potential is found and downloaded. 
+
+                When asked to find Band paths and symmetry points to write band.conf file for the crystal structure of the material for Phonon Dispersion calculations:
+                1. Search for band path and symmetry points for EXACT materials in specified resources like (graz-center-physics).
+                2. If exact materials are not found in previous step then SEARCH specified resources then search for different research papers with exact materials to extarct band structure and symmetry points.
+                3. If research papers are also not found, then search google.
+                4. Extract the band path and the corresponding symmetry points and Print all the different band path and labels at the end of search.
+                5. ALWAYS: SAVE the band path and symmetry points with the url from where it is extracted to a txt file.
                 """

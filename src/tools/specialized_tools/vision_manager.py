@@ -97,7 +97,7 @@ class VisionManager:
             base64_image = self._encode_image(image_path)
             
             response = openai.chat.completions.create(
-                model="o3",
+                model="gpt-4o",
                 messages=[
                     {
                         "role": "user",
@@ -213,7 +213,7 @@ If it is not approximately 50:50 then we need to resubmit the LAMMPS simulation 
             base64_image = self._encode_image(image_path)
             
             response = openai.chat.completions.create(
-                model="o3",
+                model="gpt-4o",
                 messages=[
                     {
                         "role": "user",
@@ -319,7 +319,7 @@ def analyze_melting_point_plots(image_path: str, api_key: str = None, workdir: s
 
 if __name__ == "__main__":
 
-    workdir = r"C:\Users\kvriz\Desktop\LAMMPS-Agents\ovito_frames_benchmark"
+    workdir = r"/Users/umakornu/Documents/Work/LAMMPS/LAMMPS-Agents/ovito_frames_benchmark"
     manager = VisionManager(workdir)
     
     # print(manager.list_images_in_workdir())

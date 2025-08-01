@@ -27,8 +27,9 @@ class ElasticConstantsManager:
         self.work_dir = Path(work_dir)
         self.work_dir.mkdir(exist_ok=True)
         
-        # if template_dir is None:
-        template_dir = "C:\Users\kvriz\Desktop\LAMMPS-Agents\src\tools\default_files" #"src/tools/default_files"
+        if template_dir is None:
+            template_dir = "/Users/umakornu/Documents/Work/LAMMPS/LAMMPS-Agents/src/tools/default_files"
+            
         
         self.template_dir = Path(template_dir)
         self.logger = self._setup_logging()
@@ -194,18 +195,18 @@ class ElasticConstantsManager:
             results = " ELASTIC SIMULATION EXECUTION:\n"
             results += "="*40 + "\n"
             
-            self.logger.info("Uploading files to HPC...")
-            upload_result = hpc_manager.upload_files("*", "lammps_run_test")
-            results += f" Upload: {upload_result}\n"
+            # self.logger.info("Uploading files to HPC...")
+            # upload_result = hpc_manager.upload_files("*", "lammps_run_test")
+            # results += f" Upload: {upload_result}\n"
             
             self.logger.info("Running LAMMPS elastic simulation...")
             run_result = hpc_manager.run_lammps("in.elastic", "lammps_run_test")
             results += f" Execution: {run_result}\n"
             
             # Download results
-            self.logger.info("Downloading results...")
-            download_result = hpc_manager.download_results("lammps_run_test", "*.log *.out *.dump")
-            results += f"Download: {download_result}\n"
+            # self.logger.info("Downloading results...")
+            # download_result = hpc_manager.download_results("lammps_run_test", "*.log *.out *.dump")
+            # results += f"Download: {download_result}\n"
             
             results += "\n Elastic simulation workflow completed"
             return results
