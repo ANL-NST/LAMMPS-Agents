@@ -1,11 +1,12 @@
+import os
 class HPCManager:
     """Handles HPC operations (upload, run, download)."""
     
     def __init__(self, workdir: str):
         self.workdir = workdir
-        self.username = "avriza"
-        self.jump_host = "mega.cnm.anl.gov"
-        self.target_host = "carbon.cnm.anl.gov"
+        # self.username = "avriza"
+        # self.jump_host = "mega.cnm.anl.gov"
+        # self.target_host = "carbon.cnm.anl.gov"
 
 
     # def upload_files(self, files: str = "*", remote_dir: str = "lammps_run_test") -> str:
@@ -195,63 +196,63 @@ class HPCManager:
             return f"Upload failed: {str(e) }"
         
 
-    def run_lammps(self, input_file: str = "input.lammps", remote_dir: str = "lammps_run_test") -> str:
-        """Run LAMMPS on Carbon HPC."""
-        import subprocess
+    # def run_lammps(self, input_file: str = "input.lammps", remote_dir: str = "lammps_run_test") -> str:
+    #     """Run LAMMPS on Carbon HPC."""
+    #     import subprocess
         
-        # Command to run LAMMPS in carbon HPC
-        lammps_cmd = f'ssh carbon "cd ~/{remote_dir} && module load lammps && lmp_serial < {input_file}"'
+    #     # Command to run LAMMPS in carbon HPC
+    #     lammps_cmd = f'ssh carbon "cd ~/{remote_dir} && module load lammps && lmp_serial < {input_file}"'
 
-        try:
-            result = subprocess.run(
-                lammps_cmd,
-                shell=True,
-                capture_output=True,
-                text=True,
-                timeout=6000  # this is important to set high in case we have long calculations so that the agentic system will not timeout before completion
-            )
+    #     try:
+    #         result = subprocess.run(
+    #             lammps_cmd,
+    #             shell=True,
+    #             capture_output=True,
+    #             text=True,
+    #             timeout=6000  # this is important to set high in case we have long calculations so that the agentic system will not timeout before completion
+    #         )
             
-            output = f"LAMMPS execution completed (exit code: {result.returncode})\n"
+    #         output = f"LAMMPS execution completed (exit code: {result.returncode})\n"
             
-            if result.stdout:
-                output += f"STDOUT:\n{result.stdout[-1000:]}\n"  # Last 1000 chars
+    #         if result.stdout:
+    #             output += f"STDOUT:\n{result.stdout[-1000:]}\n"  # Last 1000 chars
             
-            if result.stderr:
-                output += f"STDERR:\n{result.stderr[-1000:]}\n"
+    #         if result.stderr:
+    #             output += f"STDERR:\n{result.stderr[-1000:]}\n"
             
-            return output
+    #         return output
             
-        except subprocess.TimeoutExpired:
-            return "LAMMPS execution timed out"
-        except Exception as e:
-            return f"LAMMPS execution error: {str(e)}"
+    #     except subprocess.TimeoutExpired:
+    #         return "LAMMPS execution timed out"
+    #     except Exception as e:
+    #         return f"LAMMPS execution error: {str(e)}"
     
 
-    def download_results(self, remote_dir: str = "lammps_run_test") -> str:
-        """Download results from Carbon HPC."""
-        import subprocess
+    # def download_results(self, remote_dir: str = "lammps_run_test") -> str:
+    #     """Download results from Carbon HPC."""
+    #     import subprocess
         
-        # remote_path = f"{self.username}@{self.target_host}:~/{remote_dir}/"
+    #     # remote_path = f"{self.username}@{self.target_host}:~/{remote_dir}/"
         
-        download_cmd = f"scp -rq carbon:/home/avriza/{remote_dir}/* ."
-        #scp -rq carbon:/home/avriza/<workdir> .
-        try:
-            result = subprocess.run(
-                download_cmd,
-                shell=True,
-                cwd=self.workdir,
-                capture_output=True,
-                text=True,
-                timeout=800 
-            )
+    #     download_cmd = f"scp -rq carbon:/home/avriza/{remote_dir}/* ."
+    #     #scp -rq carbon:/home/avriza/<workdir> .
+    #     try:
+    #         result = subprocess.run(
+    #             download_cmd,
+    #             shell=True,
+    #             cwd=self.workdir,
+    #             capture_output=True,
+    #             text=True,
+    #             timeout=800 
+    #         )
             
-            if result.returncode == 0:
-                return f"Results downloaded successfully"
-            else:
-                return f"Download failed: {result.stderr}"
+    #         if result.returncode == 0:
+    #             return f"Results downloaded successfully"
+    #         else:
+    #             return f"Download failed: {result.stderr}"
                 
-        except Exception as e:
-            return f"Download error: {str(e)}"
+    #     except Exception as e:
+    #         return f"Download error: {str(e)}"
         
 
     # def download_results(self, remote_dir: str = "lammps_run_test", 
@@ -332,22 +333,102 @@ class HPCManager:
     #         else:
     #             return f"Download failed: {result.stderr}"
                 
+        # except subprocess.TimeoutExpired:
+        #     return "Download timed out - try with smaller file patterns"
+        # except Exception as e:
+        #     return f"Download error: {str(e)}"
+
+
+    # def run_all_lammps_displacements(self, remote_dir: str = "lammps_run_test") -> str:
+    #     """Run LAMMPS in all disp-* directories on HPC."""
+    #     import subprocess
+    #     try:
+
+    #         lammps_cmd = f'''ssh carbon "cd ~/{remote_dir} && module load lammps && \
+    #             for d in disp-*; do \
+    #             if [ -d \\\"$d\\\" ]; then \
+    #                 cd \\\"$d\\\"; \
+    #                 lmp_serial -in in.lmp > lammps.out; \
+    #                 cd ..; \
+    #             fi; \
+    #             done"'''
+
+    #         result = subprocess.run(
+    #             lammps_cmd,
+    #             shell=True,
+    #             capture_output=True,
+    #             text=True,
+    #             timeout=7200
+    #         )
+            
+    #         return f"""LAMMPS Batch Run:
+    # EXIT CODE: {result.returncode}
+    # STDOUT:
+    # {result.stdout[-1000:]}
+
+    # STDERR:
+    # {result.stderr[-1000:]}
+    # """ if result.returncode == 0 else f"Error:\n{result.stderr}"
+        
+    #     except Exception as e:
+    #         return f"Exception during remote LAMMPS batch run: {e}"
+        
+    
+    def run_lammps_local(self, input_file: str = "input.lammps", remote_dir: str = "lammps_run_test") -> str:
+        """Run LAMMPS locally."""
+        import subprocess
+        import os
+
+        # Ensure remote_dir is not appended twice
+        if remote_dir in self.workdir:
+            full_path = os.path.join(self.workdir, input_file)
+        else:
+            full_path = os.path.join(self.workdir, remote_dir, input_file)
+
+        full_path = os.path.abspath(full_path)
+        print(f"Full path to input file: {full_path}")  # Debug: Print the full path
+
+        # Check if the file exists
+        if not os.path.exists(full_path):
+            return f"Error: Input file '{full_path}' does not exist."
+
+        # Local LAMMPS command
+        lammps_cmd = f"lmp -in {full_path}"
+        print(f"Executing command: {lammps_cmd}")  # Debug: Print the command
+
+        try:
+            result = subprocess.run(
+                lammps_cmd,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=6000
+            )
+
+            output = f"LAMMPS execution completed (exit code: {result.returncode})\n"
+            if result.stdout:
+                output += f"STDOUT:\n{result.stdout[-1000:]}\n"
+            if result.stderr:
+                output += f"STDERR:\n{result.stderr[-1000:]}\n"
+            return output
+
         except subprocess.TimeoutExpired:
-            return "Download timed out - try with smaller file patterns"
+            return "LAMMPS execution timed out"
         except Exception as e:
-            return f"Download error: {str(e)}"
+            return f"LAMMPS execution error: {str(e)}"
 
+    
 
-    def run_all_lammps_displacements(self, remote_dir: str = "lammps_run_test") -> str:
+    def run_all_lammps_displacements_local(self, remote_dir: str = "lammps_run_test") -> str:
         """Run LAMMPS in all disp-* directories on HPC."""
         import subprocess
         try:
 
-            lammps_cmd = f'''ssh carbon "cd ~/{remote_dir} && module load lammps && \
+            lammps_cmd = f'''
                 for d in disp-*; do \
                 if [ -d \\\"$d\\\" ]; then \
                     cd \\\"$d\\\"; \
-                    lmp_serial -in in.lmp > lammps.out; \
+                    lmp -in in.lmp > lammps.out; \
                     cd ..; \
                 fi; \
                 done"'''

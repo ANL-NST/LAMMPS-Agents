@@ -411,7 +411,7 @@ class MeltingPointsManager:
                 self.logger.warning("Creating empty visualization with available files...")
                 
                 # Create a minimal empty plot
-                fig = plt.figure(figsize=(15, 6))
+                fig = plt.figure(figsize=(12, 5))
                 for i in range(1, 13):
                     plt.subplot(1, 3, i)
                     plt.text(0.5, 0.5, 'No data available\nCheck input files', 
@@ -430,7 +430,7 @@ class MeltingPointsManager:
             self.logger.info(f"Successfully parsed {len(data['step'])} data points")
             
             try:
-                fig, analysis = self.create_melting_analysis_plots(data, system_info)
+                fig, analysis = self.create_simple_melting_plots(data, system_info) #create_melting_analysis_plots
                 
                 output_path = 'melting_analysis.png'
                 plt.savefig(output_path, dpi=300, bbox_inches='tight')
@@ -450,6 +450,97 @@ class MeltingPointsManager:
         
         finally:
             os.chdir(original_dir)
+
+
+    def create_simple_melting_plots(self, data, system_info=None):
+        """Create simplified melting analysis with just two plots side by side"""
+        
+        # Create figure with white background and wide layout for two plots
+        fig = plt.figure(figsize=(12, 5), facecolor='white')
+        
+        # Validate and convert data to numpy arrays safely
+        required_keys = ['step', 'temperature', 'pair_energy', 'molecular_energy', 'total_energy', 'pressure', 'volume']
+        for key in required_keys:
+            if key not in data:
+                data[key] = np.array([])  # Create empty array if key missing
+            elif not isinstance(data[key], np.ndarray):
+                data[key] = np.array(data[key])
+        
+        temp = data['temperature']
+        volume = data['volume']
+        potential_energy = data['pair_energy']  # Use potential energy
+        pressure = data['pressure']
+        
+        # Only perform analysis if we have sufficient data
+        analysis = {}
+        if len(temp) > 10 and len(potential_energy) > 10:
+            analysis = self.analyze_melting_behavior(temp, volume, potential_energy, pressure)
+        
+        # Plot 1: Potential Energy vs Temperature (left side)
+        ax1 = plt.subplot(1, 2, 1)
+        
+        if len(temp) > 0 and len(potential_energy) > 0 and np.any(potential_energy != 0):
+            # Create scatter plot with red color scheme
+            scatter = ax1.scatter(temp, potential_energy, 
+                                c='#dc2626',  # Red color
+                                alpha=0.6, 
+                                s=80,  # Point size
+                                edgecolors='#991b1b',  # Darker red edge
+                                linewidth=0.6,
+                                label='MD Trajectory')
+            
+            ax1.set_xlabel('Temperature (K)', fontsize=14)
+            ax1.set_ylabel('Potential Energy (eV)', fontsize=14)
+            ax1.set_title('Potential Energy vs Temperature', 
+                        fontsize=16,  pad=20) #fontweight='bold',
+            ax1.legend(fontsize=12)
+            ax1.grid(True, alpha=0.3, linestyle='--')
+            ax1.tick_params(axis='both', labelsize=12)
+            
+            # Add some padding to the axes
+            x_margin = (temp.max() - temp.min()) * 0.05
+            y_margin = (potential_energy.max() - potential_energy.min()) * 0.05
+            ax1.set_xlim(temp.min() - x_margin, temp.max() + x_margin)
+            ax1.set_ylim(potential_energy.min() - y_margin, potential_energy.max() + y_margin)
+            
+        else:
+            ax1.text(0.5, 0.5, 'No potential energy data available', 
+                    ha='center', va='center', transform=ax1.transAxes,
+                    fontsize=14, bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.8))
+            ax1.set_title('Potential Energy vs Temperature', fontsize=16)
+            ax1.set_xlabel('Temperature (K)', fontsize=14)
+            ax1.set_ylabel('Potential Energy (eV)', fontsize=14)
+        
+        # Plot 2: Heat Capacity Analysis (right side)
+        ax2 = plt.subplot(1, 2, 2)
+        
+        if 'binned_analysis' in analysis:
+            binned = analysis['binned_analysis']
+            ax2.plot(binned['temperature'], binned['heat_capacity'], 
+                    color='#f97316', linewidth=3, label='Heat Capacity')  # Orange color
+            
+            if 'melting_temp_heat_capacity' in analysis:
+                mt = analysis['melting_temp_heat_capacity']
+                ax2.axvline(mt, color='#dc2626', linestyle='--', alpha=0.8, linewidth=2,
+                        label=f'Peak: {mt:.0f} K')
+                ax2.legend(fontsize=12)
+            
+            ax2.set_xlabel('Temperature (K)', fontsize=14)
+            ax2.set_ylabel('Heat Capacity (eV/K)', fontsize=14)
+            ax2.set_title('Heat Capacity Analysis', fontsize=16, pad=20)
+            ax2.grid(True, alpha=0.3, linestyle='--')
+            ax2.tick_params(axis='both', labelsize=12)
+        else:
+            ax2.text(0.5, 0.5, 'Insufficient data for\nheat capacity analysis', 
+                    ha='center', va='center', transform=ax2.transAxes,
+                    fontsize=14, bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.8))
+            ax2.set_title('Heat Capacity Analysis', fontsize=16)#, fontweight='bold')
+            ax2.set_xlabel('Temperature (K)', fontsize=14)
+            ax2.set_ylabel('Heat Capacity (eV/K)', fontsize=14)
+        
+        plt.tight_layout()
+        
+        return fig, analysis
 
     def create_melting_analysis_plots(self, data, system_info=None):
         """Create melting analysis plots matching the interactive scatter plot style"""
@@ -566,7 +657,7 @@ class MeltingPointsManager:
                 summary_parts.append("")
             
             # Data summary
-            summary_parts.append(f"📊 DATA SUMMARY:")
+            summary_parts.append(f"DATA SUMMARY:")
             summary_parts.append(f"   • Data points: {len(temp)} timesteps")
             summary_parts.append(f"   • Temperature range: {temp.min():.0f} - {temp.max():.0f} K")
             summary_parts.append(f"   • Simulation: 200k steps, 216 atoms")
@@ -602,7 +693,7 @@ class MeltingPointsManager:
             summary_parts.append("")
             
             # Physical interpretation
-            summary_parts.append("🔬 PHYSICAL INTERPRETATION:")
+            summary_parts.append("PHYSICAL INTERPRETATION:")
             summary_parts.append("   • Negative PE: Bound molecular system")
             summary_parts.append("   • Increasing trend: Thermal expansion")
             summary_parts.append("   • Scatter: Normal MD fluctuations")
@@ -616,7 +707,7 @@ class MeltingPointsManager:
                 summary_parts.append("   • Simulation type: NPT (variable volume)")
             
         else:
-            summary_parts.append("❌ NO DATA AVAILABLE")
+            summary_parts.append("NO DATA AVAILABLE")
             summary_parts.append("Check input files and format.")
         
         # Display the summary text with nice formatting

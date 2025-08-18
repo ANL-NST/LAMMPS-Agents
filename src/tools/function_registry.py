@@ -33,6 +33,7 @@ class FunctionRegistry:
         self.structure_creator = managers_dict['structure_creator']
         self.potential_manager = managers_dict['potential_manager']
         self.hpc_manager = managers_dict['hpc_manager']
+        self.local_run_manager = managers_dict['local_run_manager']
         self.phonopy_manager = managers_dict['phonopy_manager']
         self.validation_manager = managers_dict.get('validation_manager')
         
@@ -280,44 +281,57 @@ class FunctionRegistry:
         """Register functions for HPCExecutor agent."""
         print("Registering HPC functions...")
         
-        def upload_files(files: str = "*", remote_dir: str = "lammps_run_test") -> str:
-            return self.hpc_manager.upload_files(files, remote_dir)
+        # def upload_files(files: str = "*", remote_dir: str = "lammps_run_test") -> str:
+        #     return self.hpc_manager.upload_files(files, remote_dir)
         
-        def run_lammps(input_file: str = "input.lammps", remote_dir: str = "lammps_run_test") -> str:
-            return self.hpc_manager.run_lammps(input_file, remote_dir)
+        # def run_lammps(input_file: str = "input.lammps", remote_dir: str = "lammps_run_test") -> str:
+        #     return self.hpc_manager.run_lammps(input_file, remote_dir)
         
-        def download_results(remote_dir: str = "lammps_run_test", file_pattern: str = "*.dump *.log *.data") -> str:
-            return self.hpc_manager.download_results(remote_dir, file_pattern)
+        # def download_results(remote_dir: str = "lammps_run_test", file_pattern: str = "*.dump *.log *.data") -> str:
+        #     return self.hpc_manager.download_results(remote_dir, file_pattern)
         
-        def run_command(command: str) -> str:
-            """Execute shell command in working directory."""
-            import subprocess
-            try:
-                result = subprocess.run(
-                    command, shell=True, cwd=self.workdir,
-                    capture_output=True, text=True, timeout=120
-                )
-                output = f"Command: {command}\nExit code: {result.returncode}\n"
-                if result.stdout:
-                    output += f"STDOUT:\n{result.stdout}\n"
-                if result.stderr:
-                    output += f"STDERR:\n{result.stderr}\n"
-                return output
-            except Exception as e:
-                return f"Command failed: {str(e)}"
+        # def run_command(command: str) -> str:
+        #     """Execute shell command in working directory."""
+        #     import subprocess
+        #     try:
+        #         result = subprocess.run(
+        #             command, shell=True, cwd=self.workdir,
+        #             capture_output=True, text=True, timeout=120
+        #         )
+        #         output = f"Command: {command}\nExit code: {result.returncode}\n"
+        #         if result.stdout:
+        #             output += f"STDOUT:\n{result.stdout}\n"
+        #         if result.stderr:
+        #             output += f"STDERR:\n{result.stderr}\n"
+        #         return output
+        #     except Exception as e:
+        #         return f"Command failed: {str(e)}"
         
-        def run_all_lammps_displacements(remote_dir: str = "lammps_run_test") -> str:
-            return self.hpc_manager.run_all_lammps_displacements(remote_dir)
+        # def run_all_lammps_displacements(remote_dir: str = "lammps_run_test") -> str:
+        #     return self.hpc_manager.run_all_lammps_displacements(remote_dir)
+        
+        # def run_lammps_local(input_file: str = "input.lammps", remote_dir: str = "lammps_run_test") -> str:
+        #     return self.hpc_manager.run_lammps(input_file, remote_dir)
+        
+        def run_lammps_local(input_file: str = "input.lammps", remote_dir: str = "lammps_run_test") -> str:
+            return self.local_run_manager.run_lammps_local(input_file, remote_dir)
+       
+        # def run_all_lammps_displacements_local(remote_dir: str = "lammps_run_test") -> str:
+        #     return self.hpc_manager.run_all_lammps_displacements(remote_dir)
+        def run_all_lammps_displacements_local(remote_dir: str = "lammps_run_test") -> str:
+            return self.local_run_manager.run_all_lammps_displacements_local(remote_dir)
 
         # def download_force_dumps(remote_dir: str = "lammps_run_test") -> str:
         #     return self.hpc_manager.download_force_dumps(remote_dir)
 
         hpc_functions = [
-            (upload_files, "upload_files", "Upload files to Carbon HPC. Parameters: files (str, default '*'), remote_dir (str, default 'lammps_run_test')"),
-            (run_lammps, "run_lammps", "Run LAMMPS on Carbon. Parameters: input_file (str, default 'input.lammps'), remote_dir (str, default 'lammps_run_test')"),
-            (download_results, "download_results", "Download results from Carbon. Parameters: remote_dir (str, default 'lammps_run_test'), file_pattern (str, default '*.dump *.log *.data')"),
-            (run_command, "run_command", "Execute shell command. Parameter: command (str)"),
-            (run_all_lammps_displacements, "run_all_lammps_displacements", "Use it for phonon dispersion calculations. Runs all the LAMMPS calculations inside the displacements directory. Parameters: remote_dir (str, default 'lammps_run_test')"),
+            # (upload_files, "upload_files", "Upload files to Carbon HPC. Parameters: files (str, default '*'), remote_dir (str, default 'lammps_run_test')"),
+            # (run_lammps, "run_lammps", "Run LAMMPS on Carbon. Parameters: input_file (str, default 'input.lammps'), remote_dir (str, default 'lammps_run_test')"),
+            # (download_results, "download_results", "Download results from Carbon. Parameters: remote_dir (str, default 'lammps_run_test'), file_pattern (str, default '*.dump *.log *.data')"),
+            # (run_command, "run_command", "Execute shell command. Parameter: command (str)"),
+            # (run_all_lammps_displacements, "run_all_lammps_displacements", "Use it for phonon dispersion calculations. Runs all the LAMMPS calculations inside the displacements directory. Parameters: remote_dir (str, default 'lammps_run_test')"),
+            (run_lammps_local, "run_lammps_local", "Run LAMMPS on local PC. Parameters: input_file (str, default 'input.lammps'), remote_dir (str, default 'lammps_run_test')"),
+            (run_all_lammps_displacements_local, "run_all_lammps_displacements_local", "Runs on local PC. Use it for phonon dispersion calculations. Runs all the LAMMPS calculations inside the displacements directory. Parameters: remote_dir (str, default 'lammps_run_test')"),
             # (download_force_dumps, "download_force_dumps", "Use it for phonon dispersion calculations. Download force dumps from Carbon HPC. Parameters: remote_dir (str, default 'lammps_run_test')"),
         ]
         
@@ -329,7 +343,34 @@ class FunctionRegistry:
                 name=name,
                 description=description,
             )
-    
+
+    # ==================== LOCAL RUN FUNCTIONS ====================
+    # def register_local_lammps_run_functions(self):
+    #     """Register functions for HPCExecutor agent."""
+    #     print("Registering local LAMMPS functions...")
+        
+    #     def run_lammps_local(input_file: str = "input.lammps", remote_dir: str = "lammps_run_test") -> str:
+    #         return self.local_run_manager.run_lammps(input_file, remote_dir)
+        
+       
+    #     def run_all_lammps_displacements_local(remote_dir: str = "lammps_run_test") -> str:
+    #         return self.local_run_manager.run_all_lammps_displacements(remote_dir)
+
+
+    #     local_run_functions = [
+    #         (run_lammps_local, "run_lammps_local", "Run LAMMPS on local PC. Parameters: input_file (str, default 'input.lammps'), remote_dir (str, default 'lammps_run_test')"),
+    #         (run_all_lammps_displacements_local, "run_all_lammps_displacements_local", "Runs on local PC. Use it for phonon dispersion calculations. Runs all the LAMMPS calculations inside the displacements directory. Parameters: remote_dir (str, default 'lammps_run_test')"),
+    #     ]
+        
+    #     for func, name, description in local_run_functions:
+    #         register_function(
+    #             func,
+    #             caller=self.hpc_agent,
+    #             executor=self.lammps_admin,
+    #             name=name,
+    #             description=description,
+    #         )
+
     # ==================== ANALYSIS FUNCTIONS ====================
 
     def register_analysis_functions(self):
@@ -987,11 +1028,11 @@ class FunctionRegistry:
             return melting_point_manager.visualize_melting_point_results(system_info)        
     
         melting_analysis_functions = [
-            (analyze_solid_liquid_interface, "analyze_solid_liquid_interface", "Analyzes the simulation image to understand if a 50:50 solid liquid interface exists. Parameters: image_path (str)"),
-            (analyze_melting_point_simulation, "analyze_melting_point_simulation", "Analyzes the simulation image to understand if the structure is fully melted. Parameters: image_path (str)"),
-            (analyze_melting_point_plots, "analyze_melting_point_plots", "Analyzes the plots of the melting point simulation resuls and decide whether the calculation is complete. Parameters: image_path (str)"),
             (list_images, "list_images_in_workdir", "List all image files in working directory. No parameters required."),
+            (analyze_solid_liquid_interface, "analyze_solid_liquid_interface", "Analyzes the ovito frame image to understand if a 50:50 solid liquid interface exists. Parameters: image_path (str)"),
+            (analyze_melting_point_simulation, "analyze_melting_point_simulation", "Analyzes the final ovito frame image to understand if the structure is fully melted. Parameters: image_path (str)"),
             (visualize_melting_point_results, "visualize_melting_point_results", "Creates the analysis plots for the melting point calculation. Parameters: output_file (str)"),
+            (analyze_melting_point_plots, "analyze_melting_point_plots", "Analyzes the plots of the melting point calculation and decides whether the calculation is complete. Parameters: image_path (str)"),
         ]
         for func, name, description in melting_analysis_functions:
             register_function(
@@ -1001,3 +1042,296 @@ class FunctionRegistry:
                 name=name,
                 description=description,
             )
+
+
+    # def register_melting_point_visualization_functions(self):
+    #     """Register functions for ResultsAnalyzer agent."""
+    #     print("Registering melting point visualization functions...")
+
+    #     import asyncio, os, time, pathlib, uuid
+    #     from typing import Optional, Callable
+    #     import concurrent.futures
+
+    #     from src.tools.specialized_tools.vision_manager import VisionManager
+    #     from src.tools.specialized_tools.melting_point_manager import MeltingPointsManager
+
+    #     # --- instance state
+    #     self._mp_tasks = getattr(self, "_mp_tasks", {})
+    #     self._mp_stop_events = getattr(self, "_mp_stop_events", {})
+    #     self._mp_last_result = getattr(self, "_mp_last_result", None)
+    #     # Add thread pool for async operations
+    #     self._mp_executor = getattr(self, "_mp_executor", concurrent.futures.ThreadPoolExecutor(max_workers=2))
+
+    #     vision_manager = VisionManager(self.workdir)
+    #     melting_point_manager = MeltingPointsManager(self.workdir)
+
+    #     # ----------------- helpers -----------------
+    #     from datetime import datetime
+
+    #     def _now_iso():
+    #         return datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+
+    #     def _ensure_dir(p: str) -> str:
+    #         pathlib.Path(p).mkdir(parents=True, exist_ok=True)
+    #         return p
+
+    #     # REMOVED: _schedule_coro function - it was overly complex and unused
+
+    #     async def _render_frame_from_dump(dump_path: str, frames_dir: str) -> Optional[str]:
+    #         """
+    #         Create/overwrite a frame image from the current state of dump.output.
+    #         Returns the path to the image or None if nothing could be rendered.
+    #         """
+    #         os.makedirs(frames_dir, exist_ok=True)
+
+    #         out_png = os.path.join(frames_dir, f"frame_{_now_iso()}.png")
+    #         try:
+    #             result_path = await asyncio.to_thread(
+    #                 melting_point_manager.render_frame_from_dump, dump_path, out_png
+    #             )
+    #             return result_path if os.path.exists(result_path) else (out_png if os.path.exists(out_png) else None)
+    #         except Exception as e:
+    #             print(f"Error rendering frame: {e}")
+    #             return None
+
+    #     def _is_fully_melted(analysis_text: str) -> bool:
+    #         """
+    #         Heuristic stop signal from your analyzer.
+    #         Adjust to your analyzer's wording/return format.
+    #         """
+    #         text = (analysis_text or "").lower()
+    #         keywords = [
+    #             "fully melted", "complete melt", "structure is fully melted",
+    #             "no crystalline peaks", "terminated: full melt"
+    #         ]
+    #         return any(k in text for k in keywords)
+
+    #     async def _stop_simulation(job_id: Optional[str]) -> str:
+    #         """
+    #         Implement actual stop logic. Three common options:
+    #         1) Call your LAMMPS admin agent/tool to cancel the job by id.
+    #         2) Touch a sentinel file your simulation loop watches to exit cleanly.
+    #         3) Run a queue command (scancel, qdel) via your job controller.
+    #         """
+    #         try:
+    #             if hasattr(self, "lammps_admin") and hasattr(self.lammps_admin, "cancel_job"):
+    #                 # If you have a direct method:
+    #                 return await asyncio.to_thread(self.lammps_admin.cancel_job, job_id)
+    #             # Fallback: call a manager hook if you have one:
+    #             if hasattr(melting_point_manager, "stop_active_simulation"):
+    #                 return await asyncio.to_thread(melting_point_manager.stop_active_simulation, job_id)
+    #             return f"No stop method wired; please implement _stop_simulation for job_id={job_id!r}"
+    #         except Exception as e:
+    #             return f"Error while stopping simulation: {e}"
+
+    #     # ----------------- the monitor (runs in parallel) -----------------
+    #     async def start_dump_monitor(
+    #         dump_path: str,
+    #         frames_dir: str,
+    #         interval_sec: float = 60.0,   # one frame per minute
+    #         job_id: Optional[str] = None, # pass your scheduler/job id if you have one
+    #         task_id: str = "mp_dump_monitor",
+    #         stop_on_full_melt: bool = True,
+    #     ) -> str:
+    #         """
+    #         Continuously: (1) read dump.output, (2) render a frame, (3) analyze the image,
+    #         (4) if 'full melt' detected, stop the simulation and halt the monitor.
+    #         """
+
+    #         if task_id in self._mp_tasks and not self._mp_tasks[task_id].done():
+    #             return f"Monitor '{task_id}' already running."
+
+    #         dump_path = os.path.abspath(dump_path)
+    #         frames_dir = _ensure_dir(os.path.abspath(frames_dir))
+    #         stop_event = asyncio.Event()
+    #         self._mp_stop_events[task_id] = stop_event
+
+    #         async def _runner():
+    #             # debounce: only stop once
+    #             stopped = False
+    #             while not stop_event.is_set():
+    #                 try:
+    #                     if not os.path.exists(dump_path):
+    #                         # dump doesn't exist yet; wait and retry
+    #                         await asyncio.sleep(interval_sec)
+    #                         continue
+
+    #                     # 1) Render frame from current dump
+    #                     frame_path = await _render_frame_from_dump(dump_path, frames_dir)
+    #                     if frame_path and os.path.exists(frame_path):
+    #                         # 2) Analyze frame
+    #                         analysis = await asyncio.to_thread(
+    #                             vision_manager.analyze_melting_point_simulation, frame_path
+    #                         )
+    #                         # record the last result
+    #                         self._mp_last_result = {
+    #                             "timestamp": time.time(),
+    #                             "frame": frame_path,
+    #                             "result": analysis,
+    #                         }
+
+    #                         # 3) Decide stop
+    #                         if stop_on_full_melt and _is_fully_melted(analysis) and not stopped:
+    #                             stopped = True
+    #                             stop_msg = await _stop_simulation(job_id)
+    #                             self._mp_last_result["stop_action"] = stop_msg
+    #                             # after stopping sim, we can end monitor loop
+    #                             stop_event.set()
+    #                             break
+
+    #                     # 4) sleep until next interval
+    #                     await asyncio.sleep(interval_sec)
+
+    #                 except Exception as e:
+    #                     # keep monitor alive but record error
+    #                     self._mp_last_result = {
+    #                         "timestamp": time.time(),
+    #                         "frame": None,
+    #                         "result": f"Monitor error: {e}",
+    #                     }
+    #                     await asyncio.sleep(max(5.0, interval_sec))
+
+    #         task = asyncio.create_task(_runner(), name=f"mp:{task_id}")
+    #         self._mp_tasks[task_id] = task
+    #         return (
+    #             f"Started dump monitor '{task_id}' watching '{dump_path}', "
+    #             f"writing frames to '{frames_dir}', every {interval_sec:.0f}s."
+    #         )
+
+    #     # FIXED: Make this a sync function that properly handles the async task
+    #     def stop_dump_monitor_sync(task_id: str = "mp_dump_monitor") -> str:
+    #         """Sync wrapper for stopping the dump monitor."""
+    #         stop_event = self._mp_stop_events.get(task_id)
+    #         task = self._mp_tasks.get(task_id)
+    #         if not stop_event or not task:
+    #             return f"No running monitor found for '{task_id}'."
+            
+    #         # Set the stop event - the task will clean itself up
+    #         stop_event.set()
+    #         return f"Stop signal sent to monitor '{task_id}'."
+
+    #     # FIXED: Proper async task scheduling
+    #     def start_dump_monitor_tool(
+    #         dump_path: str,
+    #         frames_dir: str,
+    #         interval_sec: float = 60.0,
+    #         job_id: str | None = None,
+    #         task_id: str = "mp_dump_monitor",
+    #         stop_on_full_melt: bool = True,
+    #     ) -> str:
+    #         """Sync shim that actually starts the async monitor in the background."""
+    #         try:
+    #             # Try to get the current running loop
+    #             loop = asyncio.get_running_loop()
+    #             # Schedule the coroutine in the current loop
+    #             loop.create_task(
+    #                 start_dump_monitor(
+    #                     dump_path=dump_path,
+    #                     frames_dir=frames_dir,
+    #                     interval_sec=interval_sec,
+    #                     job_id=job_id,
+    #                     task_id=task_id,
+    #                     stop_on_full_melt=stop_on_full_melt,
+    #                 )
+    #             )
+    #         except RuntimeError:
+    #             # No running loop - create a new one
+    #             # This is less ideal but handles edge cases
+    #             try:
+    #                 loop = asyncio.new_event_loop()
+    #                 asyncio.set_event_loop(loop)
+    #                 loop.create_task(
+    #                     start_dump_monitor(
+    #                         dump_path=dump_path,
+    #                         frames_dir=frames_dir,
+    #                         interval_sec=interval_sec,
+    #                         job_id=job_id,
+    #                         task_id=task_id,
+    #                         stop_on_full_melt=stop_on_full_melt,
+    #                     )
+    #                 )
+    #                 # Start the loop in a separate thread to avoid blocking
+    #                 import threading
+    #                 def run_loop():
+    #                     loop.run_forever()
+    #                 thread = threading.Thread(target=run_loop, daemon=True)
+    #                 thread.start()
+    #             except Exception as e:
+    #                 return f"Failed to start monitor: {e}"
+            
+    #         return (f"Starting dump monitor '{task_id}' on '{os.path.abspath(dump_path)}' "
+    #                 f"-> frames '{os.path.abspath(frames_dir)}' every {int(interval_sec)}s.")
+
+    #     def dump_monitor_status(task_id: str = "mp_dump_monitor") -> str:
+    #         task = self._mp_tasks.get(task_id)
+    #         running = task is not None and not task.done()
+            
+    #         # Clean up completed tasks
+    #         if task and task.done():
+    #             self._mp_tasks.pop(task_id, None)
+    #             self._mp_stop_events.pop(task_id, None)
+                
+    #         return {
+    #             "running": running,
+    #             "task_exists": task is not None,
+    #             "last_result": self._mp_last_result,
+    #         }.__repr__()
+
+    #     # ----------------- your existing tools (unchanged) -----------------
+    #     def analyze_solid_liquid_interface(image_path: str) -> str:
+    #         return vision_manager.analyze_solid_liquid_interface(image_path)
+
+    #     def analyze_melting_point_plots(image_path: str) -> str:
+    #         return vision_manager.analyze_melting_point_plots(image_path)
+
+    #     def list_images(_: str = "") -> str:
+    #         return vision_manager.list_images_in_workdir()
+
+    #     def visualize_melting_point_results(system_info: str) -> str:
+    #         return melting_point_manager.visualize_melting_point_results(system_info)
+
+    #     # ADDED: Cleanup function for when the class is destroyed
+    #     def cleanup_monitors() -> str:
+    #         """Clean up all running monitors and thread pools."""
+    #         count = 0
+    #         for task_id, stop_event in list(self._mp_stop_events.items()):
+    #             stop_event.set()
+    #             count += 1
+            
+    #         if hasattr(self, '_mp_executor'):
+    #             self._mp_executor.shutdown(wait=False)
+                
+    #         return f"Cleaned up {count} monitors and thread pool."
+
+    #     # ----------------- Register all tools -----------------
+    #     melting_analysis_functions = [
+    #         # Monitor controls
+    #         (start_dump_monitor_tool, "start_dump_monitor",
+    #         "Start continuous monitoring of dump.output, render a frame every interval, analyze, and auto-stop on full melt. "
+    #         "Parameters: dump_path (str), frames_dir (str), interval_sec (float=60), job_id (str|None), task_id (str='mp_dump_monitor'), stop_on_full_melt (bool=True)"),
+    #         (stop_dump_monitor_sync, "stop_dump_monitor",  # FIXED: Use sync version
+    #         "Stop the dump monitor. Parameters: task_id (str='mp_dump_monitor')"),
+    #         (dump_monitor_status, "dump_monitor_status",
+    #         "Get monitor running state and last analysis. Parameters: task_id (str='mp_dump_monitor')"),
+    #         (cleanup_monitors, "cleanup_monitors",
+    #         "Clean up all running monitors. No parameters."),
+
+    #         # Existing utilities
+    #         (analyze_solid_liquid_interface, "analyze_solid_liquid_interface",
+    #         "Analyzes if a 50:50 solid-liquid interface exists. Parameters: image_path (str)"),
+    #         (analyze_melting_point_plots, "analyze_melting_point_plots",
+    #         "Analyzes melting point plots for completion. Parameters: image_path (str)"),
+    #         (list_images, "list_images_in_workdir",
+    #         "List all image files in working directory. No parameters."),
+    #         (visualize_melting_point_results, "visualize_melting_point_results",
+    #         "Creates analysis plots for the melting point calculation. Parameters: system_info (str)"),
+    #     ]
+
+    #     for func, name, description in melting_analysis_functions:
+    #         register_function(
+    #             func,
+    #             caller=self.analysis_agent,
+    #             executor=self.lammps_admin,
+    #             name=name,
+    #             description=description,
+    #         )

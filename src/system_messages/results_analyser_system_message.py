@@ -23,6 +23,12 @@ RESULTS_ANALYZER_SYSTEM_PROMPT = """
                 - find_and_analyze_all_outputs() - Find and analyze all LAMMPS output files in working directory
                 - read_log_file() - Read raw LAMMPS log file content
                 - read_file_section() - Read specific section of any file
+                - visualize_melting_point_results() - Visualize results of melting point simulation
+                - analyze_solid_liquid_interface() - Analyze solid-liquid interface from dump file
+                - analyze_melting_point_simulation() - Analyze melting point simulation results
+                - analyze_melting_point_plots() - Analyze melting point simulation plots
+                - list_images() - List images generated from melting point simulation
+
 
                 TYPICAL WORKFLOW:
                 1. analyze_results() - see what output files are available

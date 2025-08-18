@@ -107,7 +107,7 @@ class VisionManager:
                                 "text": """
 You are a Vision Agent specialized in analyzing molecular dynamics simulation visualizations created by OVITO.
 
-For a melting point simulation, please decide if the structure is fully melted or not.
+For a melting point simulation, please decide if the structure is fully melted or not and explain your reasoning.
 For a fully melted structure, look for:
 - Random distribution: The atomic positions appear to be randomly distributed throughout the entire image. There is no discernible long-range order or pattern in the arrangement of atoms.
 - Absence of lattice structures: There are no visible lattice structures or periodic patterns that would indicate a crystalline arrangement. The atoms are positioned in a disordered manner across the entire image.
@@ -324,5 +324,5 @@ if __name__ == "__main__":
     
     # print(manager.list_images_in_workdir())
     # result = manager.analyze_solid_liquid_interface("test_frame_1.png")
-    result = manager.analyze_melting_point_simulation("test_frame_10.png") # melt_visualization.png  #melting_visualization.png 
+    result = manager.analyze_melting_point_simulation("ccccctst.png") # melt_visualization.png  #melting_visualization.png 
     print(f"Analysis result: {result}")

@@ -28,7 +28,7 @@ class ElasticConstantsManager:
         self.work_dir.mkdir(exist_ok=True)
         
         # if template_dir is None:
-        template_dir = "C:\Users\kvriz\Desktop\LAMMPS-Agents\src\tools\default_files" #"src/tools/default_files"
+        template_dir = r"C:\Users\kvriz\Desktop\LAMMPS-Agents\src\tools\default_files" #"src/tools/default_files"
         
         self.template_dir = Path(template_dir)
         self.logger = self._setup_logging()
@@ -199,7 +199,7 @@ class ElasticConstantsManager:
             results += f" Upload: {upload_result}\n"
             
             self.logger.info("Running LAMMPS elastic simulation...")
-            run_result = hpc_manager.run_lammps("in.elastic", "lammps_run_test")
+            run_result = hpc_manager.run_lammps_local("in.elastic", "lammps_run_test") #run_lammps
             results += f" Execution: {run_result}\n"
             
             # Download results
