@@ -28,7 +28,7 @@ LAMMPS_INPUT_CREATOR_SYSTEM_PROMPT = """
                 
                 ONLY when all prerequisites met:
                 - Create proper LAMMPS input with validated potential file path
-                - Match pair_style to potential type (eam vs eam/alloy)
+                - Match pair_style to potential coeff (eam vs eam/alloy)
                 - Include appropriate output commands (dump, thermo)
                 - Save with save_lammps_input()
                 
@@ -39,16 +39,37 @@ LAMMPS_INPUT_CREATOR_SYSTEM_PROMPT = """
                 - for lattice parameters: read the log output , need to add this lattice  cell a, cellb, read the log file and get the output
                 - (multiline style not)
                
-                Define a Range of Lattice Constants
-                Select a range of lattice constants around the expected value (e.g., 3.90 Å to 4.20 Å in 0.01 Å increments).
-                For Each Lattice Constant:
-                a. Generate an FCC gold structure using the lattice fcc and create_atoms commands in LAMMPS.
-                b. Use pair_style eam and the appropriate Au_u3.eam file.
-                c. Perform an energy minimization using the minimize command.
-                d. Record the minimized potential energy.
+                FOR ANY STRUCTURE RELAXATION - Ensure the below 2-Steps are performed:
+                Step1 : box relaxation; Step  2: Structure relaxation
+            
+                a. Use appropriate pair_style for the downloaded potential file.
+                b. For Alloys, ensure the ordering of elements in the pair coeff aligns with orderimg in atomic structure file.
+                c. ALWAYS Ensure to perform volume relaxation and structure relaxation and record the minimized potential energy.
+                d. Use valid dump commands and the Number of time steps in run command is greater than 0 such that dump.atom is not empty
+                
+
+                *INSTRUCTIONS FOR LATTICE CONSTANTS & COHESIVE ENERGY:
+                    1. Always perform two separate relaxation stages:
+
+                        **Step 1: Cell (box) relaxation**
+                        - The simulation must first relax the **simulation cell volume and shape** under zero external pressure.
+                        - This means allowing the simulation box to change in **size and angles** in response to internal stresses.
+                        - The relaxation must include all six lattice degrees of freedom: lengths (`a`, `b`, `c`) and angles (`alpha`, `beta`, `gamma`).
+                        - This can be done by addeing the keywords: etotal vol cella cellb cellc cellalpha cellbeta cellgamma to the the thermo_style
+                        - The goal is to minimize the system’s enthalpy by adjusting the simulation box under zero pressure.
+
+                        **Step 2: Atomic position relaxation**
+                        - Once the simulation cell is relaxed, keep the box fixed.
+                        - Relax only the internal atomic positions to further minimize the total potential energy.
+
+                    2. print Cohesive energy per atom
+                    3. print Lattice constants (`a`, `b`, `c`, `alpha`, `beta`, `gamma`)
+
+                
+                ⚠️ Relaxing the simulation cell MUST be done explicitly . Do not skip or combine it with atomic relaxation. Always separate these two steps.
 
                 Collect Results
-                Extract the lattice constant and corresponding potential energy from each LAMMPS run.
+                Extract the lattice constant and corresponding cohesive energy from each LAMMPS run.
 
                 Fit and Analyze
                 Plot energy versus lattice constant and identify the minimum point. This gives the optimized lattice constant.

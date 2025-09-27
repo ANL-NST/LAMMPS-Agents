@@ -6,7 +6,6 @@ from autogen.agentchat.contrib.capabilities.teachability import Teachability
 import nest_asyncio
 import sys, asyncio
 if sys.platform.startswith("win"):
-    # back to default loop (supports subprocess for Playwright)
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 import datetime
 from typing import Any
@@ -15,14 +14,9 @@ nest_asyncio.apply()
 from src.tools.llm_config import get_llm_config
 from src.tools.validation_tools import ValidationManager
 
-# def is_termination_msg(message):
-#     return (
-#         isinstance(message, dict)
-#         and any(word in message.get("content", "").lower() for word in ["terminate", "complete", "done", "finished"])
-#     )
 
 class AutoGenSystem:
-    def __init__(self, llm_type: str, workdir: str, polybot_file_path: str):
+    def __init__(self, llm_type: str, workdir: str):
         print("Starting Agentic System initialization...")
 
         self.llm_type = llm_type
@@ -34,24 +28,20 @@ class AutoGenSystem:
             os.makedirs(self.workdir, exist_ok=True)
             print(f"Created working directory: {self.workdir}")
 
-        # Read polybot file
-        with open(polybot_file_path, 'r', encoding="utf-8") as polybot_file:
-            self.polybot_file = ''.join(polybot_file.readlines())
-
         # Initialize executor
         self.executor = LocalCommandLineCodeExecutor(
             timeout=1200,
             work_dir=self.workdir,
         )
-        # Setup components in CORRECT order
+        # Setup components
         print("🔧 Setting up components...")
-        self._setup_specialized_tools()    # Then specialized tools
-        self._setup_validation_manager()   # Validation manager first
+        self._setup_specialized_tools()   
+        self._setup_validation_manager() 
 
-        self._setup_agents()               # Then agents (needs specialized tools)
-        self._setup_function_registry()    # Functions (needs agents and managers)
-        self._setup_group_chat()           # Group chat (needs agents)
-        # self._setup_teachability()         # Teachability last
+        self._setup_agents()
+        self._setup_function_registry()
+        self._setup_group_chat()
+        # self._setup_teachability() # should be marked on when teachability is applied
         print("AutoGenSystem ready!")
 
 
@@ -87,10 +77,7 @@ class AutoGenSystem:
             print("  ✅ StructureCreator initialized")
 
             # Initialize potential manager (needs websurfer)
-            # Note: websurfer will be created in agents setup
-            self.potential_manager = PotentialManager(self.workdir, None)  # Will link websurfer later
-
-            # Initialize potential manager attributes for workflow tracking
+            self.potential_manager = PotentialManager(self.workdir, None) 
             if not hasattr(self.potential_manager, 'potential_validated'):
                 self.potential_manager.potential_validated = False
             if not hasattr(self.potential_manager, 'last_potential_file'):
@@ -116,7 +103,7 @@ class AutoGenSystem:
         try:
             from src.tools.agent_factory import AgentFactory
 
-            print("🤖 Setting up agents...")
+            print("Setting up agents...")
 
             # Create agent factory
             agent_factory = AgentFactory(self.llm_config, self.executor, self.workdir)
@@ -135,15 +122,12 @@ class AutoGenSystem:
             self.analysis_agent = self.agents['analysis']
             self.websurfer = self.agents['websurfer']
             self.phonopy_agent = self.agents['phonopy']
-            # self.vision_agent = self.agents['vision']
 
-            # Now link websurfer to potential manager
+            # Here we link the websurfer to potential manager
             if hasattr(self, 'potential_manager') and self.websurfer:
-                # If your PotentialManager has a method to set websurfer
                 if hasattr(self.potential_manager, 'set_websurfer'):
                     self.potential_manager.set_websurfer(self.websurfer)
                 else:
-                    # Or just set it directly
                     self.potential_manager.websurfer = self.websurfer
 
             print("✅ Agents initialized")
@@ -170,10 +154,8 @@ class AutoGenSystem:
 
             print("Setting up function registry...")
 
-            # Get managers dictionary
             managers_dict = self.get_managers_dict()
 
-            # Create function registry and register all functions
             self.function_registry = FunctionRegistry(self.agents, managers_dict, self.workdir)
             self.function_registry.register_all_functions()
 
@@ -187,7 +169,7 @@ class AutoGenSystem:
     def _setup_group_chat(self, previous_chat_file: str = None):
         """Set up group chat with all specialized agents."""
         try:
-            print("💬 Setting up group chat...")
+            print("Setting up group chat...")
             previous_messages = []
             if previous_chat_file:
                 previous_messages = self._load_previous_messages(previous_chat_file)
@@ -204,7 +186,6 @@ class AutoGenSystem:
                     self.analysis_agent,  
                     self.websurfer,
                     self.phonopy_agent,
-                    # self.vision_agent,  
                 ],
                 messages=previous_messages,
                 max_round=180,
@@ -219,7 +200,6 @@ class AutoGenSystem:
                 groupchat=self.groupchat,
                 llm_config=self.llm_config,
                 system_message=MANAGER_SYSTEM_PROMPT,
-                # is_termination_msg=is_termination_msg
             )
 
             print(f"Setting up auto-vision...")
@@ -283,7 +263,6 @@ class AutoGenSystem:
             
             import re
             
-            # Split by agent names - adjust these patterns based on your actual file format
             agent_patterns = [
                 r"admin \(to chat_manager\):",
                 r"structure_agent:",
@@ -299,24 +278,20 @@ class AutoGenSystem:
                 r"chat_manager:"
             ]
             
-            # Simple parsing - you may need to adjust based on your actual file format
             lines = content.split('\n')
             current_speaker = None
             current_message = []
             
             for line in lines:
-                # Check if line starts with an agent name
                 speaker_found = False
                 for pattern in agent_patterns:
                     if re.match(pattern, line):
-                        # Save previous message if exists
                         if current_speaker and current_message:
                             messages.append({
                                 "content": '\n'.join(current_message).strip(),
                                 "name": current_speaker
                             })
                         
-                        # Start new message
                         current_speaker = pattern.replace(":", "").replace(" (to chat_manager)", "")
                         current_message = []
                         speaker_found = True
@@ -325,7 +300,6 @@ class AutoGenSystem:
                 if not speaker_found and current_speaker:
                     current_message.append(line)
             
-            # Add the last message
             if current_speaker and current_message:
                 messages.append({
                     "content": '\n'.join(current_message).strip(),
@@ -373,8 +347,7 @@ class AutoGenSystem:
 if __name__ == "__main__":
     try:
         workdir = "lammps_run_test"
-        polybot_file_path = 'operation_instructions.py'
-        llm_type = "gpt4o" #"gpt-4.1" #
+        llm_type = "gpt4o"
 
         print("🔥 Initializing AutoGen LAMMPS System...")
 
@@ -382,7 +355,6 @@ if __name__ == "__main__":
         autogen_system = AutoGenSystem(
             llm_type=llm_type,
             workdir=workdir,
-            polybot_file_path=polybot_file_path
         )
 
         # Activate this if you want to provide a specific input from previous results
@@ -392,24 +364,18 @@ if __name__ == "__main__":
 
         print("Starting LAMMPS calculation...")
         prompt_1a = """Calculate the lattice constants of gold using LAMMPS.""" # If restarting """Continue from where we left off - what's the next step?""" #
-        prompt_1b = """Calculate the lattice constants for a gold-copper alloy using LAMMPS."""
+        # prompt_1b = """Calculate the lattice constants for a gold-copper alloy using LAMMPS."""
 
-        prompt_2a = """Compute the elastic constants of gold."""
-        prompt_2b = """Compute the elastic constants of a gold-copper alloy. Start from where we left off in the previous chat Time to analyse the results and get the elastic constants matrix."""
+        # prompt_2a = """Compute the elastic constants of gold."""
+        # prompt_2b = """Compute the elastic constants of a gold-copper alloy. Start from where we left off in the previous chat Time to analyse the results and get the elastic constants matrix."""
         
-        prompt_3a = """Calculate the phonon dispersion for gold."""
-        prompt_3b = """Calculate the phonon dispersion for gold-copper."""
+        # prompt_3a = """Calculate the phonon dispersion for gold."""
+        # prompt_3b = """Calculate the phonon dispersion for gold-copper."""
 
-        prompt_4a = """Perform a melting point simulation for gold using LAMMPS and the provided potential file."""
-        prompt_4b = """Check the image melting_visualization.png for melting."""# <img melting_visualization.png> and <img full_melt_visualization.png> and comment on which one is a melted structure."""
-        #"""Analyze the output of the melting point simulation and create the plots.""" #"""Perform a melting point simulation for a gold-copper alloy."""
-        # prompt_3b = """Check the "melted_structure_visualization.png" and decide if the structure is fully melted or not.""" #
-        # prompt_3 = """We have just performed a melting point calculation and the image generated from ovito
-        # is in the workdir. Check the image and see if there are two phases or only one. If it is only one then
-        # rerun the lammps simulation with co
-        # rrected parameters"""
+        # prompt_4a = """Perform a melting point simulation for gold using LAMMPS and the provided potential file."""
+        # prompt_4b = """Performa a melting point simulation for gold-copper alloy."""
 
-        chat_result = autogen_system.initiate_chat(prompt_3a)
+        chat_result = autogen_system.initiate_chat(prompt_1a)
 
         print("Run completed successfully!")
 
