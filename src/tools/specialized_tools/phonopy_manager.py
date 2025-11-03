@@ -521,7 +521,38 @@ Potential file '{potential_filename}' copied to each displacement directory.
         
         return kpath, labels
 
+    def run_atomsk(command: str) -> str:
+        try:
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+            return result.stdout if result.returncode == 0 else result.stderr
+        except Exception as e:
+            return str(e)
 
+    def run_phonopy(command: str) -> str:
+        try:
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+            success = result.returncode == 0
+            stderr = result.stderr.strip()
+            stdout = result.stdout.strip()
+
+            if success:
+                return stdout if stdout else "[Phonopy]: No output returned."
+
+            # Optional: Save error log to a file
+            error_log_path = os.path.join(os.getcwd(), "phonopy_error.log")
+            with open(error_log_path, 'w') as f:
+                f.write(f"Command: {command}\n\nSTDERR:\n{stderr}\n\nSTDOUT:\n{stdout}\n")
+
+            # Return a detailed error message
+            return f"[Phonopy Error]: Command failed.\nReturn code: {result.returncode}\n\nSTDERR:\n{stderr}\n\nFull log saved to: {error_log_path}"
+
+        except Exception as e:
+            return f"[Phonopy Exception]: {str(e)}"
+
+    def save_band_conf(self, content: str, path: str = "band.conf") -> str:
+        with open(path, "w") as f:
+            f.write(content.strip() + "\n")
+        return f"band.conf saved to: {os.path.abspath(path)}"
 # use seekpath for finding the k-path: https://seekpath.readthedocs.io/en/latest/maindoc.html
 
 #https://www.nature.com/articles/s41524-020-0271-3#Sec13

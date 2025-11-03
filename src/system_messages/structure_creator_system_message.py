@@ -27,5 +27,7 @@ StructureCreator_SYSTEM_PROMPT = """
                 For elastic constant calculations use a large system size (e.g. 5x5x5) to ensure we have a sufficient number of atoms for meaningful calculations.
                 Start from a triclinic structure.
 
+                For phonon dispersion calculations always start from a minimal structure, e.g. 1 1 3.
+
                 ***For melting point calculations always start from a rectangular structure, not a cubic.
                 """

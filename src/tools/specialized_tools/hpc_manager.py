@@ -418,37 +418,130 @@ class HPCManager:
             return f"LAMMPS execution error: {str(e)}"
 
     
+    def run_all_lammps_displacements_local(
+        self,
+        lammps_folder: str = None,
+        *,
+        # backward-compat with your earlier signature
+        remote_dir: str = None,
+        lammps_exe: str = "lmp",          # e.g. "lmp", "lmp.exe", "lmp_serial", "lmp_mpi"
+        input_file: str = "in.lmp",
+        timeout_s: int = 7200,
+        mpi_cmd: list | None = None,      # e.g. ["mpiexec", "-n", "8"] to run with MPI
+        tail_lines: int = 12
+    ) -> str:
+        """
+        Run LAMMPS in all 'disp-*' subdirectories under the given root folder.
+        - Cross-platform (no shell loops).
+        - Writes combined stdout/stderr to disp-*/lammps.out.
+        - Returns a summary with exit codes and the last lines of each log.
 
-    def run_all_lammps_displacements_local(self, remote_dir: str = "lammps_run_test") -> str:
-        """Run LAMMPS in all disp-* directories on HPC."""
+        Args:
+            lammps_folder: Root directory containing disp-* subfolders.
+            remote_dir: (deprecated) Alias of lammps_folder for backward compatibility.
+            lammps_exe: LAMMPS executable name or full path.
+            input_file: Input script name inside each disp-* folder.
+            timeout_s: Per-job timeout in seconds.
+            mpi_cmd: Optional launcher prefix, e.g. ["mpiexec", "-n", "8"].
+            tail_lines: Number of lines to show from end of each lammps.out in the summary.
+        """
+        import os
+        import glob
+        import shutil
         import subprocess
-        try:
+        from collections import Counter
 
-            lammps_cmd = f'''
-                for d in disp-*; do \
-                if [ -d \\\"$d\\\" ]; then \
-                    cd \\\"$d\\\"; \
-                    lmp -in in.lmp > lammps.out; \
-                    cd ..; \
-                fi; \
-                done"'''
+        # Resolve folder argument with backward compatibility
+        root = lammps_folder or remote_dir
+        if not root:
+            return "Error: You must pass lammps_folder (or remote_dir for backward compatibility)."
 
-            result = subprocess.run(
-                lammps_cmd,
-                shell=True,
-                capture_output=True,
-                text=True,
-                timeout=7200
+        root = os.path.abspath(os.path.expanduser(root))
+        if not os.path.isdir(root):
+            return f"Error: '{root}' is not a valid directory."
+
+        # Check LAMMPS executable
+        if shutil.which(lammps_exe) is None and not os.path.isfile(lammps_exe):
+            return (f"Error: LAMMPS executable '{lammps_exe}' not found on PATH or as a file. "
+                    f"Provide the correct name or full path (e.g., 'lmp.exe').")
+
+        disp_dirs = sorted([d for d in glob.glob(os.path.join(root, "disp-*")) if os.path.isdir(d)])
+        if not disp_dirs:
+            return f"No 'disp-*' subdirectories found inside '{root}'."
+
+        def _tail(path: str, n: int) -> str:
+            try:
+                with open(path, "rb") as fh:
+                    # Efficient tail for moderate files
+                    fh.seek(0, os.SEEK_END)
+                    size = fh.tell()
+                    block = 4096
+                    data = b""
+                    while size > 0 and data.count(b"\n") <= n:
+                        jump = min(block, size)
+                        size -= jump
+                        fh.seek(size)
+                        data = fh.read(jump) + data
+                    lines = data.splitlines()[-n:]
+                return "\n".join(line.decode("utf-8", errors="ignore") for line in lines)
+            except FileNotFoundError:
+                return "(lammps.out not found)"
+            except Exception as e:
+                return f"(failed to read lammps.out: {e})"
+
+        results = []
+        counts = Counter()
+
+        for d in disp_dirs:
+            in_path = os.path.join(d, input_file)
+            out_path = os.path.join(d, "lammps.out")
+
+            if not os.path.isfile(in_path):
+                results.append((d, "SKIPPED: missing in.lmp", None))
+                counts["skipped"] += 1
+                continue
+
+            cmd = ([lammps_exe, "-in", input_file] if not mpi_cmd
+                else [*mpi_cmd, lammps_exe, "-in", input_file])
+
+            try:
+                with open(out_path, "w", encoding="utf-8", errors="ignore") as fh:
+                    proc = subprocess.run(
+                        cmd,
+                        cwd=d,
+                        stdout=fh,
+                        stderr=subprocess.STDOUT,
+                        text=True,
+                        timeout=timeout_s
+                    )
+                if proc.returncode == 0:
+                    counts["ok"] += 1
+                    status = f"OK (exit 0)"
+                else:
+                    counts["fail"] += 1
+                    status = f"FAILED (exit {proc.returncode})"
+                results.append((d, status, _tail(out_path, tail_lines)))
+            except subprocess.TimeoutExpired:
+                counts["timeout"] += 1
+                results.append((d, f"TIMEOUT after {timeout_s}s", _tail(out_path, tail_lines)))
+            except Exception as e:
+                counts["exception"] += 1
+                # Try to capture any partial output
+                results.append((d, f"EXCEPTION: {e}", _tail(out_path, tail_lines)))
+
+        # Build summary text
+        header = [
+            f"LAMMPS Batch Run in: {root}",
+            f"Found {len(disp_dirs)} disp-* folders",
+            f"Results: OK={counts['ok']}, FAIL={counts['fail']}, TIMEOUT={counts['timeout']}, "
+            f"SKIPPED={counts['skipped']}, EXCEPTION={counts['exception']}",
+            ""
+        ]
+        blocks = []
+        for d, status, tail in results:
+            name = os.path.basename(d)
+            blocks.append(
+                f"[{name}] {status}\n"
+                f"--- tail of lammps.out ({tail_lines} lines) ---\n{tail}\n"
             )
-            
-            return f"""LAMMPS Batch Run:
-    EXIT CODE: {result.returncode}
-    STDOUT:
-    {result.stdout[-1000:]}
-
-    STDERR:
-    {result.stderr[-1000:]}
-    """ if result.returncode == 0 else f"Error:\n{result.stderr}"
-        
-        except Exception as e:
-            return f"Exception during remote LAMMPS batch run: {e}"
+        return "\n".join(header + blocks)

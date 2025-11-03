@@ -68,7 +68,7 @@ class AgentFactory:
         admin = UserProxyAgent(
             name="admin",
             is_termination_msg=lambda msg: msg.get("content") is not None and "TERMINATE" in msg["content"],
-            human_input_mode="ALWAYS",
+            human_input_mode="NEVER", # "ALWAYS",
             system_message="Admin agent. You coordinate the workflow and provide feedback. Return 'TERMINATE' when done.",
             llm_config=self.llm_config,
             code_execution_config={"executor": self.executor},
@@ -115,7 +115,7 @@ class AgentFactory:
         return ConversableAgent(
             name="LAMMPSInputCreator",
             llm_config=lammps_llm_config,
-            human_input_mode="ALWAYS",
+            human_input_mode= "ALWAYS", #"NEVER" , #
             code_execution_config=False,
             system_message=LAMMPS_INPUT_CREATOR_SYSTEM_PROMPT
         )

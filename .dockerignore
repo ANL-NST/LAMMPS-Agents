@@ -1,11 +1,8 @@
-# folders
-tmp_folder
-test_folder
-config
-keys
-backup
-results
-lammps_run_test
+backup/
+results/
+ovito_frames_benchmark/
+.git/
+teachability_db_gpt4o/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -103,15 +100,6 @@ ipython_config.py
 #   install all needed dependencies.
 #Pipfile.lock
 
-<<<<<<< HEAD
-=======
-# UV
-#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#uv.lock
-
->>>>>>> 49ff5309bb60957fdb6a091c3b79de670772aa21
 # poetry
 #   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
 #   This is especially recommended for binary packages to ensure reproducibility, and is more
@@ -172,9 +160,57 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+# Large directories - DO NOT COPY
+results/
+backup/
+ovito_frames_benchmark/
+.git/
+teachability_db_gpt4o/
+
+# All dump and trajectory files
+*.lammpstrj
+*.dump
+*.db
+*.sqlite
+*.log
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Large data files
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.pkl
+*.pickle

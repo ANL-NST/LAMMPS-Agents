@@ -61,9 +61,9 @@ class VisualizationManager:
             
             # Handle radius property
             if 'Radius' in props:
-                result += "  ✅ Radius column present – nothing to do\n"
+                result += "Radius column present – nothing to do\n"
             elif 'radius' in props:
-                result += " Found 'radius' → mapping to 'Radius'\n"
+                result += "Found 'radius' → mapping to 'Radius'\n"
                 pipe.modifiers.append(ComputePropertyModifier(
                     output_property='Radius',
                     expressions='radius'))

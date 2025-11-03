@@ -612,7 +612,7 @@ class PotentialManager:
         return "Unknown"
 
     def _download_from_url(self, url: str, filename: str) -> str:
-        """Download file from URL."""
+        """Download file from URL with proper headers."""
         import urllib.request
         import os
         
@@ -620,8 +620,29 @@ class PotentialManager:
             filename = os.path.basename(url)
         
         filepath = os.path.join(self.workdir, filename)
-        urllib.request.urlretrieve(url, filepath)
-        return filepath
+        
+        # Create headers to mimic a browser request
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Connection': 'keep-alive',
+        }
+        
+        try:
+            # Create a Request object with headers
+            request = urllib.request.Request(url, headers=headers)
+            
+            # Download the file
+            with urllib.request.urlopen(request) as response:
+                with open(filepath, 'wb') as out_file:
+                    out_file.write(response.read())
+                    
+            return filepath
+            
+        except Exception as e:
+            print(f"Download error: {str(e)}")
+            raise
 
     def _validate_downloaded_file(self, filepath: str, element: str) -> bool:
         """Quick validation of downloaded file."""

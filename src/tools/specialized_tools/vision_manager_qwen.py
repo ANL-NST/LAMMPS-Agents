@@ -7,41 +7,39 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.join(current_dir, '..', '..')
 sys.path.insert(0, src_dir)
 
-try:
-    from config.settings import OPENAI_API_KEY, qwen
-except ImportError:
-    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-    if not OPENAI_API_KEY:
-        raise ImportError("Could not find OPENAI_API_KEY in config.settings or environment variables")
+# Try OpenRouter first (fastest and easiest)
+# try:
+# from config.settings import OPENROUTER_API_KEY
+OPENROUTER_API_KEY = "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"
+API_KEY = OPENROUTER_API_KEY
+BASE_URL = "https://openrouter.ai/api/v1"
+MODEL = "qwen/qwen3-vl-8b-thinking"  # Free Qwen vision model
+print("✓ Using OpenRouter with Qwen")
+
+# Temporarily hardcode to test
+# API_KEY = "sk-or-v1-YOUR-ACTUAL-OPENROUTER-KEY-HERE"  # Paste your actual key
+# BASE_URL = "https://openrouter.ai/api/v1"
+# MODEL = "qwen/qwen-2-vl-7b-instruct:free"
+# except ImportError:
+#     # Fallback to DashScope if OpenRouter not available
+#     from config.settings import qwen_api_key
+#     API_KEY = qwen_api_key
+#     BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+#     MODEL = "qwen3-vl-plus"
+#     print("✓ Using DashScope")
 
 
 class VisionManager:
     """Manager class for analyzing LAMMPS simulation images."""
     
     def __init__(self, workdir: str):
-        """
-        Initialize the VisionManager.
-        
-        Args:
-            workdir: Working directory where image files are located
-        """
         self.workdir = workdir
-        self.api_key = OPENAI_API_KEY
+        self.api_key = API_KEY
+        self.base_url = BASE_URL
+        self.model = MODEL
     
     def _resolve_image_path(self, image_path: str) -> str:
-        """
-        Resolve image path to absolute path.
-        
-        Args:
-            image_path: Relative or absolute path to image
-            
-        Returns:
-            Absolute path to image
-            
-        Raises:
-            FileNotFoundError: If image file cannot be found
-        """
-
+        """Resolve image path to absolute path."""
         if os.path.isabs(image_path):
             if os.path.exists(image_path):
                 return image_path
@@ -66,38 +64,24 @@ class VisionManager:
         raise FileNotFoundError(f"Image file not found. Tried paths: {all_tried}")
     
     def _encode_image(self, image_path: str) -> str:
-        """
-        Encode image to base64 string.
-        
-        Args:
-            image_path: Path to image file
-            
-        Returns:
-            Base64 encoded image string
-        """
+        """Encode image to base64 string."""
         full_path = self._resolve_image_path(image_path)
         
         with open(full_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode('utf-8')
     
     def analyze_melting_point_simulation(self, image_path: str) -> str:
-        """
-        Analyze LAMMPS melting point simulation image.
-        
-        Args:
-            image_path: Path to the simulation image (relative to workdir or absolute)
-            
-        Returns:
-            String description of the analysis
-        """
+        """Analyze LAMMPS melting point simulation image."""
         try:
-            openai.api_key = self.api_key
+            client = openai.OpenAI(
+                api_key=self.api_key,
+                base_url=self.base_url
+            )
             
-            # Encode the image
             base64_image = self._encode_image(image_path)
             
-            response = openai.chat.completions.create(
-                model="o3",
+            response = client.chat.completions.create(
+                model=self.model,
                 messages=[
                     {
                         "role": "user",
@@ -134,7 +118,6 @@ Review your assessment carefully before concluding and providing an answer.
                         ]
                     }
                 ],
-                # max_tokens=200,
             )
             
             return response.choices[0].message.content
@@ -145,23 +128,17 @@ Review your assessment carefully before concluding and providing an answer.
             return f"Vision analysis failed: {str(e)}"
     
     def analyze_solid_liquid_interface(self, image_path: str) -> str:
-        """
-        Analyze solid-liquid interface in simulation image.
-        
-        Args:
-            image_path: Path to the simulation image (relative to workdir or absolute)
-            
-        Returns:
-            String description of the interface analysis
-        """
+        """Analyze solid-liquid interface in simulation image."""
         try:
-            openai.api_key = self.api_key
+            client = openai.OpenAI(
+                api_key=self.api_key,
+                base_url=self.base_url
+            )
             
-            # Encode the image
             base64_image = self._encode_image(image_path)
             
-            response = openai.chat.completions.create(
-                model= "gpt-4o", # "o3", # #gpt-4o
+            response = client.chat.completions.create(
+                model=self.model,
                 messages=[
                     {
                         "role": "user",
@@ -186,7 +163,6 @@ If it is not approximately 50:50 then we need to resubmit the LAMMPS simulation 
                         ]
                     }
                 ],
-                # max_tokens=200,
             )        
             return response.choices[0].message.content
             
@@ -197,23 +173,17 @@ If it is not approximately 50:50 then we need to resubmit the LAMMPS simulation 
         
 
     def analyze_melting_point_plots(self, image_path: str) -> str:
-        """
-        Analyze the melting point simulation plots.
-        
-        Args:
-            image_path: Path to the simulation image (relative to workdir or absolute)
-            
-        Returns:
-            String description of the analysis
-        """
+        """Analyze the melting point simulation plots."""
         try:
-            openai.api_key = self.api_key
+            client = openai.OpenAI(
+                api_key=self.api_key,
+                base_url=self.base_url
+            )
             
-            # Encode the image
             base64_image = self._encode_image(image_path)
             
-            response = openai.chat.completions.create(
-                model="o3",
+            response = client.chat.completions.create(
+                model=self.model,
                 messages=[
                     {
                         "role": "user",
@@ -231,7 +201,6 @@ Analyze the potential energy vs temperature and heat capacity vs temperature plo
 4. **Coverage Assessment**: If no clear peak exists, or if the peak occurs near the temperature boundaries, recommend extending the simulation temperature range
 
 Note: For crystalline melting, expect a gradual S-shaped increase in potential energy rather than an abrupt discontinuous jump.
-
                                 """
                             },
                             {
@@ -243,7 +212,6 @@ Note: For crystalline melting, expect a gradual S-shaped increase in potential e
                         ]
                     }
                 ],
-                # max_tokens=200,
             )
             
             return response.choices[0].message.content
@@ -254,12 +222,7 @@ Note: For crystalline melting, expect a gradual S-shaped increase in potential e
             return f"Vision analysis failed: {str(e)}"
     
     def list_images_in_workdir(self) -> str:
-        """
-        List all image files in the working directory.
-        
-        Returns:
-            String listing of image files found
-        """
+        """List all image files in the working directory."""
         image_extensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff']
         
         try:
@@ -280,49 +243,12 @@ Note: For crystalline melting, expect a gradual S-shaped increase in potential e
             return f"Error listing images: {str(e)}"
 
 
-# For backward compatibility, provide the standalone functions
-def analyze_melting_point_simulation_image(image_path: str, api_key: str = None, workdir: str = None) -> str:
-    """Standalone function for backward compatibility."""
-    if workdir is None:
-        workdir = os.getcwd()
-    
-    manager = VisionManager(workdir)
-    if api_key:
-        manager.api_key = api_key
-    
-    return manager.analyze_melting_point_simulation(image_path)
-
-
-def analyze_solid_liquid_interface(image_path: str, api_key: str = None, workdir: str = None) -> str:
-    """Standalone function for backward compatibility."""
-    if workdir is None:
-        workdir = os.getcwd()
-    
-    manager = VisionManager(workdir)
-    if api_key:
-        manager.api_key = api_key
-    
-    return manager.analyze_solid_liquid_interface(image_path)
-
-
-def analyze_melting_point_plots(image_path: str, api_key: str = None, workdir: str = None) -> str:
-    """Standalone function for backward compatibility."""
-    if workdir is None:
-        workdir = os.getcwd()
-    
-    manager = VisionManager(workdir)
-    if api_key:
-        manager.api_key = api_key
-    
-    return manager.analyze_melting_point_plots(image_path)
-
-
 if __name__ == "__main__":
-
     workdir = r"C:\Users\kvriz\Desktop\LAMMPS-Agents\ovito_frames_benchmark"
     manager = VisionManager(workdir)
     
-    # print(manager.list_images_in_workdir())
-    # result = manager.analyze_solid_liquid_interface("test_frame_1.png")
-    result = manager.analyze_melting_point_simulation("ccccctst.png") # melt_visualization.png  #melting_visualization.png 
-    print(f"Analysis result: {result}")
+    print(f"Model: {manager.model}")
+    print(f"Endpoint: {manager.base_url}\n")
+    result = manager.analyze_solid_liquid_interface("test_frame_1.png")
+    # result = manager.analyze_melting_point_simulation("test_frame_1.png")
+    print(f"Analysis result:\n{result}")
