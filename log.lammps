@@ -1,6 +1,0 @@
-LAMMPS (29 Aug 2024 - Update 3)
-OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:99)
-  using 1 OpenMP thread(s) per MPI task
-Open of file C:\Users\kvriz\AppData\Local\LAMMPS USER-REBOMOS Plugin 29Aug2024-MSMPI\rebomosplugin.so failed: 
-Loaded 0 plugins from C:\Users\kvriz\AppData\Local\LAMMPS USER-REBOMOS Plugin 29Aug2024-MSMPI
-Loaded 1 plugins from C:\Users\kvriz\AppData\Local\LAMMPS 64-bit 29Aug2024\plugins

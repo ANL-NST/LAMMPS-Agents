@@ -29,7 +29,6 @@ class AutoGenSystem:
             os.makedirs(self.workdir, exist_ok=True)
             print(f"Created working directory: {self.workdir}")
 
-
         self.executor = LocalCommandLineCodeExecutor(
             timeout=1200,
             work_dir=self.workdir,
@@ -109,7 +108,7 @@ class AutoGenSystem:
         try:
             from src.tools.agent_factory import AgentFactory
 
-            print("🤖 Setting up agents...")
+            print("Setting up agents...")
 
             # Create agent factory
             agent_factory = AgentFactory(self.llm_config, self.executor, self.workdir)
@@ -128,15 +127,12 @@ class AutoGenSystem:
             self.analysis_agent = self.agents['analysis']
             self.websurfer = self.agents['websurfer']
             self.phonopy_agent = self.agents['phonopy']
-            # self.vision_agent = self.agents['vision']
 
-            # Now link websurfer to potential manager
+            # Here we link the websurfer to potential manager
             if hasattr(self, 'potential_manager') and self.websurfer:
-                # If your PotentialManager has a method to set websurfer
                 if hasattr(self.potential_manager, 'set_websurfer'):
                     self.potential_manager.set_websurfer(self.websurfer)
                 else:
-                    # Or just set it directly
                     self.potential_manager.websurfer = self.websurfer
 
             print("✅ Agents initialized")
@@ -164,10 +160,8 @@ class AutoGenSystem:
 
             print("Setting up function registry...")
 
-            # Get managers dictionary
             managers_dict = self.get_managers_dict()
 
-            # Create function registry and register all functions
             self.function_registry = FunctionRegistry(self.agents, managers_dict, self.workdir)
             self.function_registry.register_all_functions()
 
@@ -181,7 +175,7 @@ class AutoGenSystem:
     def _setup_group_chat(self, previous_chat_file: str = None):
         """Set up group chat with all specialized agents."""
         try:
-            print("💬 Setting up group chat...")
+            print("Setting up group chat...")
             previous_messages = []
             if previous_chat_file:
                 previous_messages = self._load_previous_messages(previous_chat_file)
@@ -198,7 +192,6 @@ class AutoGenSystem:
                     self.analysis_agent,  
                     self.websurfer,
                     self.phonopy_agent,
-                    # self.vision_agent,  
                 ],
                 messages=previous_messages,
                 max_round=800,
@@ -217,7 +210,6 @@ class AutoGenSystem:
                 groupchat=self.groupchat,
                 llm_config=self.llm_config,
                 system_message=MANAGER_SYSTEM_PROMPT,
-                # is_termination_msg=is_termination_msg
             )
 
             print(f"Setting up auto-vision...")
@@ -282,7 +274,6 @@ class AutoGenSystem:
             
             import re
             
-            # Split by agent names - adjust these patterns based on your actual file format
             agent_patterns = [
                 r"admin \(to chat_manager\):",
                 r"structure_agent:",
@@ -298,24 +289,20 @@ class AutoGenSystem:
                 r"chat_manager:"
             ]
             
-            # Simple parsing - you may need to adjust based on your actual file format
             lines = content.split('\n')
             current_speaker = None
             current_message = []
             
             for line in lines:
-                # Check if line starts with an agent name
                 speaker_found = False
                 for pattern in agent_patterns:
                     if re.match(pattern, line):
-                        # Save previous message if exists
                         if current_speaker and current_message:
                             messages.append({
                                 "content": '\n'.join(current_message).strip(),
                                 "name": current_speaker
                             })
                         
-                        # Start new message
                         current_speaker = pattern.replace(":", "").replace(" (to chat_manager)", "")
                         current_message = []
                         speaker_found = True
@@ -324,7 +311,6 @@ class AutoGenSystem:
                 if not speaker_found and current_speaker:
                     current_message.append(line)
             
-            # Add the last message
             if current_speaker and current_message:
                 messages.append({
                     "content": '\n'.join(current_message).strip(),
